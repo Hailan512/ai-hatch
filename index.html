@@ -63,6 +63,8 @@ a{color:var(--p);text-decoration:none;}
 .side-box li{display:flex;align-items:center;gap:8px;padding:6px 0;font-size:13px;color:var(--t);}
 .side-box li .tag{display:inline-block;width:18px;height:18px;border-radius:4px;flex-shrink:0;font-size:10px;line-height:18px;text-align:center;color:#fff;font-weight:600;}
 .side-box li a{color:var(--p);font-size:13px;}
+.side-link{display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:8px;font-size:12px;color:inherit;text-decoration:none;transition:.2s;cursor:pointer;}
+.side-link:hover{background:rgba(108,99,255,.1);color:var(--p);}
 .side-box .quote{font-size:13px;color:var(--m);line-height:1.6;}
 .side-box .quote .author{font-size:12px;color:var(--p);margin-top:6px;}
 
@@ -357,6 +359,57 @@ const STAGES = [
   {id:7,name:'出师',desc:'独立应用',goal:'完成Day19-21'}
 ];
 
+// 实践/彩蛋任务跳转链接
+const TASK_URLS = {
+  // 实践任务
+  'd1-pr':'https://chat.openai.com',
+  'd2-pr':'https://chat.openai.com',
+  'd3-pr':'https://www.canva.com/ai-image-generator/',
+  'd4-pr':'https://chat.openai.com',
+  'd5-pr':'https://www.midjourney.com',
+  'd6-pr':'https://github.com/features/copilot',
+  'd7-pr':'https://chat.openai.com',
+  'd8-pr':'https://runwayml.com',
+  'd9-pr':'https://zapier.com/ai',
+  'd10-pr':'https://chat.openai.com',
+  'd11-pr':'https://chat.openai.com',
+  'd12-pr':'https://www.canva.com',
+  'd13-pr':'https://chat.openai.com',
+  'd14-pr':'https://notion.so',
+  'd15-pr':'https://chat.openai.com',
+  'd16-pr':'https://chat.openai.com',
+  'd17-pr':'https://chat.openai.com',
+  'd18-pr':'https://chat.openai.com',
+  'd19-pr':'https://chat.openai.com',
+  'd20-pr':'https://chat.openai.com',
+  'd21-pr':'https://chat.openai.com',
+  // 彩蛋任务
+  'd1-bns':'https://www.midjourney.com',
+  'd2-bns':'https://chat.openai.com',
+  'd3-bns':'https://www.profilepicture.ai',
+  'd4-bns':'https://chat.openai.com',
+  'd5-bns':'https://www.fotor.com/ai-image-generator/',
+  'd6-bns':'https://chat.openai.com',
+  'd7-bns':'https://chat.openai.com',
+  'd8-bns':'https://elevenlabs.io',
+  'd9-bns':'https://character.ai',
+  'd10-bns':'https://chat.openai.com',
+  'd11-bns':'https://chat.openai.com',
+  'd12-bns':'https://www.canva.com',
+  'd13-bns':'https://chat.openai.com',
+  'd14-bns':'https://chat.openai.com',
+  'd15-bns':'https://chat.openai.com',
+  'd16-bns':'https://chat.openai.com',
+  'd17-bns':'https://chat.openai.com',
+  'd18-bns':'https://chat.openai.com',
+  'd19-bns':'https://chat.openai.com',
+  'd20-bns':'https://chat.openai.com',
+  'd21-bns':'https://chat.openai.com',
+};
+
+// 跳转等待状态
+let pendingVerifyReturn = false;
+
 const CURR = [
   // Day 1-7
   {day:1,title:'Day1: AI是什么?',tasks:[
@@ -570,7 +623,10 @@ const QUICK_TOOLS = [
   {name:'AI写作',icon:'✍️',tip:'辅助写作创作'},
   {name:'AI总结',icon:'📝',tip:'一键总结长文'},
   {name:'AI图片',icon:'🎨',tip:'AI图像生成'},
-  {name:'AI代码',icon:'💻',tip:'代码辅助编程'}
+  {name:'AI代码',icon:'💻',tip:'代码辅助编程'},
+  {name:'AI表格',icon:'📊',tip:'智能表格处理'},
+  {name:'AI会议',icon:'🎤',tip:'会议纪要生成'},
+  {name:'AI搜索',icon:'🔍',tip:'智能信息搜索'}
 ];
 
 const STAGE_GOALS = [
@@ -831,6 +887,8 @@ function initApp() {
   renderSideBar();
   renderQuickTools();
   renderToday();
+  renderDayDots();
+  renderStageGoal();
   renderMap();
   renderAchievements();
   renderLeaderboard();
@@ -849,11 +907,11 @@ function renderDailyQuote() {
 // ====== SIDEBAR ======
 function renderSideBar() {
   const toolsEl = document.getElementById('side-tools');
-  toolsEl.innerHTML=SIDE_TOOLS.map(t=>`<li><span class="tag">${t.icon}</span><a href="${t.link}" target="_blank">${t.name}</a></li>`).join('');
+  toolsEl.innerHTML=SIDE_TOOLS.map(t=>`<li><a class="side-link" href="${t.link}" target="_blank">${t.icon} ${t.name}</a></li>`).join('');
   const commEl = document.getElementById('side-community');
-  commEl.innerHTML=SIDE_COMMUNITY.map(t=>`<li><span class="tag">${t.icon}</span><a href="${t.link}" target="_blank">${t.name}</a></li>`).join('');
+  commEl.innerHTML=SIDE_COMMUNITY.map(t=>`<li><a class="side-link" href="${t.link}" target="_blank">${t.icon} ${t.name}</a></li>`).join('');
   const learnEl = document.getElementById('side-learning');
-  learnEl.innerHTML=SIDE_LEARNING.map(t=>`<li><span class="tag">${t.icon}</span><a href="${t.link}" target="_blank">${t.name}</a></li>`).join('');
+  learnEl.innerHTML=SIDE_LEARNING.map(t=>`<li><a class="side-link" href="${t.link}" target="_blank">${t.icon} ${t.name}</a></li>`).join('');
 }
 
 // ====== QUICK TOOLS ======
@@ -881,6 +939,25 @@ function updateProgress() {
   // Stage dots
   const dotsEl = document.getElementById('stage-dots');
   dotsEl.innerHTML=STAGES.map((s,i)=>`<div class="stage-dot ${user.dayReached>=(s.id*3)?'active':''}" title="${s.name}"></div>`).join('');
+}
+
+// ====== DAY DOTS (separate) ======
+function renderDayDots() {
+  updateProgress();
+}
+
+// ====== STAGE GOAL ======
+function renderStageGoal() {
+  const user = getCurrentUser();
+  if(!user) return;
+  const currDay = Math.min(user.dayReached+1,21);
+  let stageIdx = Math.ceil(currDay/3)-1;
+  if(stageIdx<0) stageIdx=0;
+  if(stageIdx>=STAGE_GOALS.length) stageIdx=STAGE_GOALS.length-1;
+  const goal = STAGE_GOALS[stageIdx];
+  const infoEl = document.getElementById('day-info');
+  // Append stage goal to existing content
+  infoEl.innerHTML+='<br><span style="font-size:13px;color:var(--p);">📌 阶段目标：'+goal.goal+'</span>';
 }
 
 // ====== TODAY PAGE ======
@@ -926,28 +1003,107 @@ function openVerifyModal(taskId,type,name,desc,xp) {
 function showVerifyStep1() {
   const t = verifyTask.type;
   let body = '';
+  const taskUrl = TASK_URLS[verifyTask.taskId] || 'https://chat.openai.com';
+
   if(t==='th'){
     const qs = VERIFY_QUESTIONS.th||[];
     const q = qs[parseInt(verifyTask.taskId.split('-')[0].substring(1))-1]||qs[0]||qs[qs.length-1];
     body=`<div class="mbo-q">📝 理论验证题：</div>
       <div style="font-size:14px;color:var(--t);margin-bottom:10px;font-weight:500;">${q.q}</div>
       <textarea class="mbo-input" id="mbo-answer" placeholder="请输入你的答案..." rows="3"></textarea>`;
+    document.getElementById('mbo-body').innerHTML=body;
+    document.getElementById('mbo-foot').innerHTML=[
+      `<button class="mbo-btn secondary" onclick="closeModal()">取消</button>`,
+      `<button class="mbo-btn primary" onclick="submitVerify()">提交验证</button>`
+    ].join('');
+
   }else if(t==='pr'){
-    body=`<div class="mbo-q">📸 实践验证：</div>
-      <div style="font-size:13px;color:var(--m);margin-bottom:10px;">请描述你完成了什么操作（代替截图上传）</div>
-      <textarea class="mbo-input" id="mbo-answer" placeholder="请描述你的操作步骤和结果..." rows="4"></textarea>`;
+    // 实践任务：跳转到工具，回来后自动验证
+    body=`
+      <div class="mbo-q">🚀 实践任务：去完成它！</div>
+      <div style="font-size:13px;color:var(--m);margin-bottom:14px;line-height:1.7;">${verifyTask.desc}</div>
+      <div style="background:#F0EEFF;border-radius:10px;padding:12px 14px;margin-bottom:12px;display:flex;align-items:center;gap:10px;">
+        <span style="font-size:22px;">🔗</span>
+        <div>
+          <div style="font-size:12px;color:var(--p);font-weight:600;margin-bottom:2px;">推荐工具</div>
+          <a href="${taskUrl}" target="_blank" style="font-size:13px;color:var(--t);word-break:break-all;">${taskUrl}</a>
+        </div>
+      </div>
+      <div id="pr-waiting" style="display:none;background:#FFF8E1;border-radius:8px;padding:10px 12px;font-size:12px;color:#B8860B;text-align:center;">
+        ⏳ 正在等待你完成任务，回到此页面后自动验证...
+      </div>
+      <div id="pr-done-confirm" style="display:none;">
+        <div style="background:rgba(67,233,123,.1);border-radius:8px;padding:12px;font-size:13px;color:var(--a);text-align:center;margin-bottom:10px;">
+          ✅ 检测到你回来了！点击确认完成验证
+        </div>
+      </div>`;
+    document.getElementById('mbo-body').innerHTML=body;
+    document.getElementById('mbo-foot').innerHTML=[
+      `<button class="mbo-btn secondary" onclick="closeModal()">取消</button>`,
+      `<button class="mbo-btn primary" id="go-practice-btn" onclick="goPractice('${taskUrl}')">🚀 去完成任务</button>`
+    ].join('');
+
   }else{
-    const qs = VERIFY_QUESTIONS.bns||[];
-    const q = qs[parseInt(verifyTask.taskId.split('-')[0].substring(1))-1]||qs[qs.length-1];
-    body=`<div class="mbo-q">🎭 彩蛋验证：</div>
-      <div style="font-size:14px;color:var(--t);margin-bottom:10px;font-weight:500;">${q.q}</div>
-      <textarea class="mbo-input" id="mbo-answer" placeholder="发挥你的想象力..." rows="3"></textarea>`;
+    // 彩蛋任务：跳转到工具，回来后自动验证
+    body=`
+      <div class="mbo-q">🎁 彩蛋任务：去玩吧！</div>
+      <div style="font-size:13px;color:var(--m);margin-bottom:14px;line-height:1.7;">${verifyTask.desc}</div>
+      <div style="background:#FFF0F6;border-radius:10px;padding:12px 14px;margin-bottom:12px;display:flex;align-items:center;gap:10px;">
+        <span style="font-size:22px;">✨</span>
+        <div>
+          <div style="font-size:12px;color:var(--s);font-weight:600;margin-bottom:2px;">推荐工具</div>
+          <a href="${taskUrl}" target="_blank" style="font-size:13px;color:var(--t);word-break:break-all;">${taskUrl}</a>
+        </div>
+      </div>
+      <div id="pr-waiting" style="display:none;background:#FFF8E1;border-radius:8px;padding:10px 12px;font-size:12px;color:#B8860B;text-align:center;">
+        ⏳ 正在等待你去玩，回到此页面后自动完成...
+      </div>
+      <div id="pr-done-confirm" style="display:none;">
+        <div style="background:rgba(67,233,123,.1);border-radius:8px;padding:12px;font-size:13px;color:var(--a);text-align:center;margin-bottom:10px;">
+          🎉 欢迎回来！彩蛋任务已完成！
+        </div>
+      </div>`;
+    document.getElementById('mbo-body').innerHTML=body;
+    document.getElementById('mbo-foot').innerHTML=[
+      `<button class="mbo-btn secondary" onclick="closeModal()">取消</button>`,
+      `<button class="mbo-btn primary" id="go-practice-btn" onclick="goPractice('${taskUrl}')">✨ 去完成彩蛋</button>`
+    ].join('');
   }
-  document.getElementById('mbo-body').innerHTML=body;
-  document.getElementById('mbo-foot').innerHTML=[
-    `<button class="mbo-btn secondary" onclick="closeModal()">取消</button>`,
-    `<button class="mbo-btn primary" onclick="submitVerify()">提交验证</button>`
-  ].join('');
+}
+
+// 跳转到外部工具，监听页面回来事件
+function goPractice(url) {
+  pendingVerifyReturn = true;
+  // 更新UI：显示等待状态
+  const waitEl = document.getElementById('pr-waiting');
+  const btn = document.getElementById('go-practice-btn');
+  if(waitEl) waitEl.style.display='block';
+  if(btn){ btn.textContent='✅ 我已完成，确认验证'; btn.onclick=confirmPracticeReturn; }
+  // 打开工具网站
+  window.open(url, '_blank');
+  // visibilitychange：用户切回来时自动弹出确认
+  const handler = function() {
+    if(document.visibilityState==='visible' && pendingVerifyReturn) {
+      document.removeEventListener('visibilitychange', handler);
+      showPracticeReturn();
+    }
+  };
+  document.addEventListener('visibilitychange', handler);
+}
+
+function showPracticeReturn() {
+  const waitEl = document.getElementById('pr-waiting');
+  const doneEl = document.getElementById('pr-done-confirm');
+  const btn = document.getElementById('go-practice-btn');
+  if(waitEl) waitEl.style.display='none';
+  if(doneEl) doneEl.style.display='block';
+  if(btn){ btn.textContent='🎉 确认完成 +'+verifyTask.xp+'XP'; btn.onclick=confirmPracticeReturn; }
+}
+
+function confirmPracticeReturn() {
+  pendingVerifyReturn = false;
+  document.getElementById('mbo-body').innerHTML='<div class="mbo-result success">✅ 验证通过！已获得 '+verifyTask.xp+' XP</div>';
+  document.getElementById('mbo-foot').innerHTML='<button class="mbo-btn primary" onclick="closeModalAndComplete()">🎊 领取奖励</button>';
 }
 
 function submitVerify() {
@@ -1070,6 +1226,11 @@ function renderMoney() {
     </div>`
   ).join('');
 }
+
+// ====== ALIASES ======
+function renderStageMap() { renderMap(); }
+function renderStats() { updateProgress(); }
+function renderDay() { renderToday(); }
 
 // ====== NAVIGATION ======
 function showPage(page) {
