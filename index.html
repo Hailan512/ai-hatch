@@ -361,13 +361,13 @@ const STAGES = [
 
 // 所有任务跳转链接（理论/实践/彩蛋）
 const TASK_URLS = {
-  // 理论任务 → 学习资料
-  'd1-th':'https://zh.wikipedia.org/wiki/%E4%BA%BA%E5%B7%A5%E6%99%BA%E8%83%BD',
+  // 理论任务 → 学习资料（全部国内可访问）
+  'd1-th':'https://baike.baidu.com/item/%E4%BA%BA%E5%B7%A5%E6%99%BA%E8%83%BD/9180',
   'd2-th':'https://juejin.cn/post/7224304672677879867',
   'd3-th':'https://www.zhihu.com/question/560985030',
-  'd4-th':'https://zh.wikipedia.org/wiki/Transformer%E6%A8%A1%E5%9E%8B',
-  'd5-th':'https://zh.wikipedia.org/wiki/%E6%89%A9%E6%95%A3%E6%A8%A1%E5%9E%8B',
-  'd6-th':'https://github.com/features/copilot',
+  'd4-th':'https://www.zhihu.com/question/337012315',
+  'd5-th':'https://www.zhihu.com/question/536265982',
+  'd6-th':'https://tongyi.aliyun.com/lingma',
   'd7-th':'https://www.zhihu.com/question/593614614',
   'd8-th':'https://www.zhihu.com/question/556476171',
   'd9-th':'https://www.zhihu.com/question/595283895',
@@ -381,52 +381,52 @@ const TASK_URLS = {
   'd17-th':'https://www.zhihu.com/question/570431428',
   'd18-th':'https://www.zhihu.com/question/566659506',
   'd19-th':'https://www.zhihu.com/question/474061424',
-  'd20-th':'https://huggingface.co',
+  'd20-th':'https://modelscope.cn',
   'd21-th':'https://www.zhihu.com/question/474061424',
-  // 实践任务
-  'd1-pr':'https://chat.openai.com',
-  'd2-pr':'https://chat.openai.com',
-  'd3-pr':'https://www.canva.com/ai-image-generator/',
-  'd4-pr':'https://chat.openai.com',
-  'd5-pr':'https://www.midjourney.com',
-  'd6-pr':'https://github.com/features/copilot',
-  'd7-pr':'https://chat.openai.com',
-  'd8-pr':'https://runwayml.com',
-  'd9-pr':'https://zapier.com/ai',
-  'd10-pr':'https://chat.openai.com',
-  'd11-pr':'https://chat.openai.com',
-  'd12-pr':'https://www.canva.com',
-  'd13-pr':'https://chat.openai.com',
-  'd14-pr':'https://notion.so',
-  'd15-pr':'https://chat.openai.com',
-  'd16-pr':'https://chat.openai.com',
-  'd17-pr':'https://chat.openai.com',
-  'd18-pr':'https://chat.openai.com',
-  'd19-pr':'https://chat.openai.com',
-  'd20-pr':'https://chat.openai.com',
-  'd21-pr':'https://chat.openai.com',
-  // 彩蛋任务
-  'd1-bns':'https://www.midjourney.com',
-  'd2-bns':'https://chat.openai.com',
-  'd3-bns':'https://www.profilepicture.ai',
-  'd4-bns':'https://chat.openai.com',
-  'd5-bns':'https://www.fotor.com/ai-image-generator/',
-  'd6-bns':'https://chat.openai.com',
-  'd7-bns':'https://chat.openai.com',
-  'd8-bns':'https://elevenlabs.io',
-  'd9-bns':'https://character.ai',
-  'd10-bns':'https://chat.openai.com',
-  'd11-bns':'https://chat.openai.com',
-  'd12-bns':'https://www.canva.com',
-  'd13-bns':'https://chat.openai.com',
-  'd14-bns':'https://chat.openai.com',
-  'd15-bns':'https://chat.openai.com',
-  'd16-bns':'https://chat.openai.com',
-  'd17-bns':'https://chat.openai.com',
-  'd18-bns':'https://chat.openai.com',
-  'd19-bns':'https://chat.openai.com',
-  'd20-bns':'https://chat.openai.com',
-  'd21-bns':'https://chat.openai.com',
+  // 实践任务（全部国内可访问）
+  'd1-pr':'https://yiyan.baidu.com',
+  'd2-pr':'https://yiyan.baidu.com',
+  'd3-pr':'https://www.gaoding.com/ai-tools',
+  'd4-pr':'https://yiyan.baidu.com',
+  'd5-pr':'https://klingai.kuaishou.com',
+  'd6-pr':'https://tongyi.aliyun.com/lingma',
+  'd7-pr':'https://yiyan.baidu.com',
+  'd8-pr':'https://jimeng.jianying.com',
+  'd9-pr':'https://coze.cn',
+  'd10-pr':'https://yiyan.baidu.com',
+  'd11-pr':'https://yiyan.baidu.com',
+  'd12-pr':'https://www.gaoding.com',
+  'd13-pr':'https://yiyan.baidu.com',
+  'd14-pr':'https://www.feishu.cn',
+  'd15-pr':'https://yiyan.baidu.com',
+  'd16-pr':'https://yiyan.baidu.com',
+  'd17-pr':'https://yiyan.baidu.com',
+  'd18-pr':'https://yiyan.baidu.com',
+  'd19-pr':'https://yiyan.baidu.com',
+  'd20-pr':'https://modelscope.cn',
+  'd21-pr':'https://yiyan.baidu.com',
+  // 彩蛋任务（全部国内可访问）
+  'd1-bns':'https://klingai.kuaishou.com',
+  'd2-bns':'https://yiyan.baidu.com',
+  'd3-bns':'https://miaoya.cn',
+  'd4-bns':'https://yiyan.baidu.com',
+  'd5-bns':'https://www.meitu.com/app/xiu',
+  'd6-bns':'https://yiyan.baidu.com',
+  'd7-bns':'https://yiyan.baidu.com',
+  'd8-bns':'https://www.jianying.com',
+  'd9-bns':'https://yiyan.baidu.com',
+  'd10-bns':'https://yiyan.baidu.com',
+  'd11-bns':'https://yiyan.baidu.com',
+  'd12-bns':'https://www.gaoding.com',
+  'd13-bns':'https://yiyan.baidu.com',
+  'd14-bns':'https://yiyan.baidu.com',
+  'd15-bns':'https://yiyan.baidu.com',
+  'd16-bns':'https://yiyan.baidu.com',
+  'd17-bns':'https://yiyan.baidu.com',
+  'd18-bns':'https://yiyan.baidu.com',
+  'd19-bns':'https://yiyan.baidu.com',
+  'd20-bns':'https://yiyan.baidu.com',
+  'd21-bns':'https://yiyan.baidu.com',
 };
 
 // 跳转等待状态
@@ -605,30 +605,30 @@ const MONEY_PATHS = [
 ];
 
 const SIDE_TOOLS = [
-  {name:'ChatGPT',link:'https://chat.openai.com',icon:'💬'},
-  {name:'Midjourney',link:'https://www.midjourney.com',icon:'🎨'},
-  {name:'Claude',link:'https://claude.ai',icon:'🧠'},
-  {name:'DALL-E',link:'https://dall-e.com',icon:'🖼️'},
-  {name:'GitHub Copilot',link:'https://github.com/features/copilot',icon:'🐙'},
-  {name:'Canva AI',link:'https://www.canva.com',icon:'🎨'}
+  {name:'文心一言',link:'https://yiyan.baidu.com',icon:'💬'},
+  {name:'可灵AI',link:'https://klingai.kuaishou.com',icon:'🎨'},
+  {name:'通义千问',link:'https://tongyi.aliyun.com',icon:'🧠'},
+  {name:'即梦AI',link:'https://jimeng.jianying.com',icon:'🖼️'},
+  {name:'通义灵码',link:'https://tongyi.aliyun.com/lingma',icon:'🐙'},
+  {name:'稿定设计',link:'https://www.gaoding.com',icon:'✏️'}
 ];
 
 const SIDE_COMMUNITY = [
-  {name:'即刻·AI话题',link:'https://jike.com',icon:'⚡'},
+  {name:'微信公众号·AI话题',link:'https://weixin.sogou.com/weixin?type=2&query=AI人工智能',icon:'⚡'},
   {name:'V2EX',link:'https://www.v2ex.com',icon:'💻'},
   {name:'掘金',link:'https://juejin.cn',icon:'🏔️'},
-  {name:'知乎·AI话题',link:'https://www.zhihu.com',icon:'🔍'},
-  {name:'AI社区',link:'https://www.ithome.com',icon:'🏠'},
-  {name:'Hacker News',link:'https://news.ycombinator.com',icon:'🔗'}
+  {name:'知乎·AI话题',link:'https://www.zhihu.com/topic/19551275',icon:'🔍'},
+  {name:'IT之家',link:'https://www.ithome.com',icon:'🏠'},
+  {name:'36氪·AI频道',link:'https://36kr.com/information/AI',icon:'🔗'}
 ];
 
 const SIDE_LEARNING = [
-  {name:'Coursera AI课程',link:'https://www.coursera.org',icon:'📚'},
-  {name:'FastAI',link:'https://www.fast.ai',icon:'⚡'},
-  {name:'吴恩达课程',link:'https://www.deeplearning.ai',icon:'👨‍🏫'},
-  {name:'YouTube AI频道',link:'https://www.youtube.com',icon:'🎬'},
-  {name:'Papers With Code',link:'https://paperswithcode.com',icon:'📄'},
-  {name:'Kaggle',link:'https://www.kaggle.com',icon:'🏆'}
+  {name:'吴恩达AI课程(网易)',link:'https://study.163.com/provider/2401498/index.htm',icon:'📚'},
+  {name:'魔搭社区',link:'https://modelscope.cn',icon:'⚡'},
+  {name:'B站·AI学习',link:'https://search.bilibili.com/all?keyword=AI人工智能教程',icon:'👨‍🏫'},
+  {name:'CSDN·AI',link:'https://www.csdn.net/nav/ai',icon:'🎬'},
+  {name:'掘金·AI专栏',link:'https://juejin.cn/tag/%E4%BA%BA%E5%B7%A5%E6%99%BA%E8%83%BD',icon:'📄'},
+  {name:'阿里云AI学习路径',link:'https://developer.aliyun.com/learning/roadmap/ai',icon:'🏆'}
 ];
 
 const QUOTES = [
@@ -1025,12 +1025,12 @@ function openVerifyModal(taskId,type,name,desc,xp) {
 function showVerifyStep1() {
   const t = verifyTask.type;
   let body = '';
-  const taskUrl = TASK_URLS[verifyTask.taskId] || 'https://chat.openai.com';
+  const taskUrl = TASK_URLS[verifyTask.taskId] || 'https://yiyan.baidu.com';
 
   if(t==='th'){
     const qs = VERIFY_QUESTIONS.th||[];
     const q = qs[parseInt(verifyTask.taskId.split('-')[0].substring(1))-1]||qs[0]||qs[qs.length-1];
-    const thUrl = TASK_URLS[verifyTask.taskId] || 'https://www.zhihu.com/topic/19776749';
+    const thUrl = TASK_URLS[verifyTask.taskId] || 'https://www.zhihu.com/topic/19551275';
     // 理论任务：先去读→回来答题
     body=`
       <div class="mbo-q">📖 理论学习任务</div>
