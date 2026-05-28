@@ -1035,12 +1035,10 @@ function showVerifyStep1() {
     body=`
       <div class="mbo-q">📖 理论学习任务</div>
       <div style="font-size:13px;color:var(--m);margin-bottom:14px;line-height:1.7;">${verifyTask.desc}</div>
-      <div style="background:#F0EEFF;border-radius:10px;padding:12px 14px;margin-bottom:14px;display:flex;align-items:center;gap:10px;">
-        <span style="font-size:22px;">📚</span>
-        <div>
-          <div style="font-size:12px;color:var(--p);font-weight:600;margin-bottom:2px;">推荐学习资料</div>
-          <a href="${thUrl}" target="_blank" style="font-size:13px;color:var(--t);word-break:break-all;">${thUrl}</a>
-        </div>
+      <div style="background:linear-gradient(135deg,#F0EEFF,#E8F8EF);border-radius:10px;padding:14px 16px;margin-bottom:14px;">
+        <div style="font-size:12px;color:var(--p);font-weight:600;margin-bottom:6px;">📚 点击下方链接开始阅读</div>
+        <a href="${thUrl}" target="_blank" style="display:inline-block;padding:10px 16px;background:var(--p);color:#fff;border-radius:8px;font-size:14px;font-weight:600;text-decoration:none;transition:.2s;">📖 打开学习资料</a>
+        <div style="font-size:11px;color:var(--m);margin-top:8px;">n点击后在浏览器中打开，阅读完毕返回本页面即可完成验证</div>
       </div>
       <div id="th-quiz" style="display:none;">
         <div style="font-size:13px;font-weight:600;color:var(--t);margin-bottom:8px;">📝 验证题：</div>
@@ -1055,17 +1053,12 @@ function showVerifyStep1() {
       `<button class="mbo-btn secondary" onclick="closeModal()">取消</button>`,
       `<button class="mbo-btn primary" id="go-read-btn" onclick="goRead('${thUrl}')">📖 去阅读学习</button>`
     ].join('');
-    // visibilitychange：回来后显示答题框
+    // visibilitychange：回来后显示答题框（用 pagehide/pageshow 兼容移动端）
     const readHandler = function(){
       if(document.visibilityState==='visible' && pendingVerifyReturn){
         document.removeEventListener('visibilitychange', readHandler);
         pendingVerifyReturn = false;
-        const waitEl=document.getElementById('th-waiting');
-        const quizEl=document.getElementById('th-quiz');
-        const btn=document.getElementById('go-read-btn');
-        if(waitEl) waitEl.style.display='none';
-        if(quizEl) quizEl.style.display='block';
-        if(btn){ btn.textContent='✅ 提交答案'; btn.onclick=submitVerify; }
+        showQuizAfterRead();
       }
     };
     document.addEventListener('visibilitychange', readHandler);
@@ -1124,17 +1117,35 @@ function showVerifyStep1() {
   }
 }
 
-// 理论任务：跳转去读文章
+// 理论任务：跳转去读文章（兼容移动端）
 function goRead(url) {
   pendingVerifyReturn = true;
   const waitEl = document.getElementById('th-waiting');
   const btn = document.getElementById('go-read-btn');
   if(waitEl) waitEl.style.display='block';
   if(btn){ btn.textContent='⏳ 阅读中...'; btn.disabled=true; }
-  window.open(url, '_blank');
+  // 兼容移动端：优先用 window.open，失败则用 location
+  const w = window.open(url, '_blank');
+  if(!w || w.closed || typeof w.closed==='undefined'){
+    // popup被拦截，用a标签方式
+    const a = document.createElement('a');
+    a.href = url;
+    a.target = '_blank';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  }
 }
 
-// 跳转到外部工具，监听页面回来事件
+// 阅读回来后显示答题区
+function showQuizAfterRead() {
+  const quizEl = document.getElementById('th-quiz');
+  const btn = document.getElementById('go-read-btn');
+  if(quizEl) quizEl.style.display='block';
+  if(btn){ btn.textContent='✅ 提交答案'; btn.onclick=submitVerify; }
+}
+
+// 跳转到外部工具，监听页面回来事件（兼容移动端）
 function goPractice(url) {
   pendingVerifyReturn = true;
   // 更新UI：显示等待状态
@@ -1142,8 +1153,16 @@ function goPractice(url) {
   const btn = document.getElementById('go-practice-btn');
   if(waitEl) waitEl.style.display='block';
   if(btn){ btn.textContent='✅ 我已完成，确认验证'; btn.onclick=confirmPracticeReturn; }
-  // 打开工具网站
-  window.open(url, '_blank');
+  // 兼容移动端跳转
+  const w = window.open(url, '_blank');
+  if(!w || w.closed || typeof w.closed==='undefined'){
+    const a = document.createElement('a');
+    a.href = url;
+    a.target = '_blank';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  }
   // visibilitychange：用户切回来时自动弹出确认
   const handler = function() {
     if(document.visibilityState==='visible' && pendingVerifyReturn) {
