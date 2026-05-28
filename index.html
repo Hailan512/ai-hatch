@@ -359,8 +359,30 @@ const STAGES = [
   {id:7,name:'出师',desc:'独立应用',goal:'完成Day19-21'}
 ];
 
-// 实践/彩蛋任务跳转链接
+// 所有任务跳转链接（理论/实践/彩蛋）
 const TASK_URLS = {
+  // 理论任务 → 学习资料
+  'd1-th':'https://zh.wikipedia.org/wiki/%E4%BA%BA%E5%B7%A5%E6%99%BA%E8%83%BD',
+  'd2-th':'https://juejin.cn/post/7224304672677879867',
+  'd3-th':'https://www.zhihu.com/question/560985030',
+  'd4-th':'https://zh.wikipedia.org/wiki/Transformer%E6%A8%A1%E5%9E%8B',
+  'd5-th':'https://zh.wikipedia.org/wiki/%E6%89%A9%E6%95%A3%E6%A8%A1%E5%9E%8B',
+  'd6-th':'https://github.com/features/copilot',
+  'd7-th':'https://www.zhihu.com/question/593614614',
+  'd8-th':'https://www.zhihu.com/question/556476171',
+  'd9-th':'https://www.zhihu.com/question/595283895',
+  'd10-th':'https://juejin.cn/post/7247730308916838461',
+  'd11-th':'https://www.zhihu.com/question/605267867',
+  'd12-th':'https://www.zhihu.com/question/580675419',
+  'd13-th':'https://www.zhihu.com/question/597724562',
+  'd14-th':'https://www.zhihu.com/question/474061424',
+  'd15-th':'https://www.zhihu.com/question/305129491',
+  'd16-th':'https://www.zhihu.com/question/586154268',
+  'd17-th':'https://www.zhihu.com/question/570431428',
+  'd18-th':'https://www.zhihu.com/question/566659506',
+  'd19-th':'https://www.zhihu.com/question/474061424',
+  'd20-th':'https://huggingface.co',
+  'd21-th':'https://www.zhihu.com/question/474061424',
   // 实践任务
   'd1-pr':'https://chat.openai.com',
   'd2-pr':'https://chat.openai.com',
@@ -1008,14 +1030,45 @@ function showVerifyStep1() {
   if(t==='th'){
     const qs = VERIFY_QUESTIONS.th||[];
     const q = qs[parseInt(verifyTask.taskId.split('-')[0].substring(1))-1]||qs[0]||qs[qs.length-1];
-    body=`<div class="mbo-q">📝 理论验证题：</div>
-      <div style="font-size:14px;color:var(--t);margin-bottom:10px;font-weight:500;">${q.q}</div>
-      <textarea class="mbo-input" id="mbo-answer" placeholder="请输入你的答案..." rows="3"></textarea>`;
+    const thUrl = TASK_URLS[verifyTask.taskId] || 'https://www.zhihu.com/topic/19776749';
+    // 理论任务：先去读→回来答题
+    body=`
+      <div class="mbo-q">📖 理论学习任务</div>
+      <div style="font-size:13px;color:var(--m);margin-bottom:14px;line-height:1.7;">${verifyTask.desc}</div>
+      <div style="background:#F0EEFF;border-radius:10px;padding:12px 14px;margin-bottom:14px;display:flex;align-items:center;gap:10px;">
+        <span style="font-size:22px;">📚</span>
+        <div>
+          <div style="font-size:12px;color:var(--p);font-weight:600;margin-bottom:2px;">推荐学习资料</div>
+          <a href="${thUrl}" target="_blank" style="font-size:13px;color:var(--t);word-break:break-all;">${thUrl}</a>
+        </div>
+      </div>
+      <div id="th-quiz" style="display:none;">
+        <div style="font-size:13px;font-weight:600;color:var(--t);margin-bottom:8px;">📝 验证题：</div>
+        <div style="font-size:13px;color:var(--t);margin-bottom:10px;font-weight:500;">${q.q}</div>
+        <textarea class="mbo-input" id="mbo-answer" placeholder="请输入你的答案..." rows="3"></textarea>
+      </div>
+      <div id="th-waiting" style="background:#FFF8E1;border-radius:8px;padding:10px 12px;font-size:12px;color:#B8860B;text-align:center;display:none;">
+        ⏳ 正在等待你阅读完，回到此页面后显示验证题...
+      </div>`;
     document.getElementById('mbo-body').innerHTML=body;
     document.getElementById('mbo-foot').innerHTML=[
       `<button class="mbo-btn secondary" onclick="closeModal()">取消</button>`,
-      `<button class="mbo-btn primary" onclick="submitVerify()">提交验证</button>`
+      `<button class="mbo-btn primary" id="go-read-btn" onclick="goRead('${thUrl}')">📖 去阅读学习</button>`
     ].join('');
+    // visibilitychange：回来后显示答题框
+    const readHandler = function(){
+      if(document.visibilityState==='visible' && pendingVerifyReturn){
+        document.removeEventListener('visibilitychange', readHandler);
+        pendingVerifyReturn = false;
+        const waitEl=document.getElementById('th-waiting');
+        const quizEl=document.getElementById('th-quiz');
+        const btn=document.getElementById('go-read-btn');
+        if(waitEl) waitEl.style.display='none';
+        if(quizEl) quizEl.style.display='block';
+        if(btn){ btn.textContent='✅ 提交答案'; btn.onclick=submitVerify; }
+      }
+    };
+    document.addEventListener('visibilitychange', readHandler);
 
   }else if(t==='pr'){
     // 实践任务：跳转到工具，回来后自动验证
@@ -1069,6 +1122,16 @@ function showVerifyStep1() {
       `<button class="mbo-btn primary" id="go-practice-btn" onclick="goPractice('${taskUrl}')">✨ 去完成彩蛋</button>`
     ].join('');
   }
+}
+
+// 理论任务：跳转去读文章
+function goRead(url) {
+  pendingVerifyReturn = true;
+  const waitEl = document.getElementById('th-waiting');
+  const btn = document.getElementById('go-read-btn');
+  if(waitEl) waitEl.style.display='block';
+  if(btn){ btn.textContent='⏳ 阅读中...'; btn.disabled=true; }
+  window.open(url, '_blank');
 }
 
 // 跳转到外部工具，监听页面回来事件
