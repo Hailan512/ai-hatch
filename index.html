@@ -1,0 +1,1097 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AI小白孵化器</title>
+<style>
+:root{--p:#6C63FF;--s:#FF6584;--a:#2DB86E;--bg:#F0F2F8;--c1:#FFFFFF;--c2:#F5F6FC;--t:#1A1A2E;--m:#6B6B8A;--g:#D4A017;--r:#E74C3C;--w:#FFD700;--bl:#3498DB;--gr:#2ECC71;--or:#E67E22;}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Hiragino Sans GB','Microsoft YaHei',sans-serif;background:var(--bg);color:var(--t);min-height:100vh;overflow-x:hidden;}
+a{color:var(--p);text-decoration:none;}
+
+/* Login Overlay */
+#login-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(108,99,255,0.15);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;z-index:9999;transition:opacity .3s;}
+#login-overlay.hidden{opacity:0;pointer-events:none;}
+.login-panel{background:var(--c1);border-radius:16px;padding:32px 40px 28px;width:340px;box-shadow:0 8px 32px rgba(108,99,255,0.12);animation:loginPop .3s ease-out;}
+@keyframes loginPop{from{opacity:0;transform:scale(.85);}to{opacity:1;transform:scale(1);}}
+.login-panel h2{font-size:20px;text-align:center;margin-bottom:20px;color:var(--t);}
+.login-panel .tabs{display:flex;margin-bottom:18px;border-bottom:1px solid #eee;}
+.login-panel .tabs span{flex:1;text-align:center;padding:8px 0;cursor:pointer;color:var(--m);font-size:15px;border-bottom:2px solid transparent;transition:.2s;}
+.login-panel .tabs span.active{color:var(--p);border-bottom-color:var(--p);font-weight:600;}
+.login-panel input{width:100%;padding:10px 14px;border:1px solid #ddd;border-radius:8px;font-size:14px;margin-bottom:12px;outline:0;transition:.2s;}
+.login-panel input:focus{border-color:var(--p);box-shadow:0 0 0 3px rgba(108,99,255,.12);}
+.login-panel .btn-login{width:100%;background:var(--p);color:#fff;border:0;padding:11px;border-radius:8px;font-size:15px;font-weight:600;cursor:pointer;transition:.2s;}
+.login-panel .btn-login:hover{opacity:.88;}
+.login-panel .btn-login:active{transform:scale(.98);}
+.login-panel .error{font-size:13px;color:var(--r);margin-top:8px;text-align:center;min-height:18px;}
+.login-panel .success{font-size:13px;color:var(--a);margin-top:8px;text-align:center;min-height:18px;}
+
+/* Fireworks */
+#fireworks{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);pointer-events:none;z-index:9998;display:none;}
+.firework{position:absolute;width:12px;height:12px;border-radius:50%;animation:fireworkOut .8s ease-out forwards;opacity:0;}
+@keyframes fireworkOut{0%{transform:translate(0,0) scale(1);opacity:1;}100%{transform:translate(var(--dx),var(--dy)) scale(0);opacity:0;}}
+.star-fall{position:fixed;top:-30px;font-size:20px;pointer-events:none;z-index:9997;animation:starFall 1.6s ease-out forwards;}
+@keyframes starFall{0%{transform:translateY(0) rotate(0deg) scale(1);opacity:1;}100%{transform:translateY(300px) rotate(180deg) scale(0);opacity:0;}}
+
+/* Header */
+.hdr{display:flex;align-items:center;justify-content:space-between;padding:14px 20px;background:var(--c1);border-bottom:1px solid #eee;position:sticky;top:0;z-index:100;}
+.hdr .logo{display:flex;align-items:center;gap:8px;font-weight:700;font-size:18px;color:var(--p);}
+.hdr .logo svg{width:28px;height:28px;}
+.hdr .user-area{display:flex;align-items:center;gap:10px;}
+.hdr .user-area .avatar{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--p),var(--s));display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:14px;}
+.hdr .user-area .nickname{font-size:14px;color:var(--t);font-weight:500;}
+.hdr .user-area .logout-btn{padding:4px 10px;font-size:13px;color:var(--m);border:1px solid #ddd;border-radius:6px;cursor:pointer;transition:.2s;background:#fff;}
+.hdr .user-area .logout-btn:hover{color:var(--r);border-color:var(--r);}
+
+/* Nav */
+.nav{display:flex;gap:2px;padding:10px 20px;background:var(--c1);border-bottom:1px solid #eee;overflow-x:auto;}
+.nav .nav-item{padding:8px 18px;font-size:14px;color:var(--m);cursor:pointer;border-radius:8px;white-space:nowrap;transition:.2s;}
+.nav .nav-item:hover{color:var(--p);background:var(--c2);}
+.nav .nav-item.active{color:#fff;background:var(--p);}
+
+/* Layout */
+.layout{display:flex;gap:12px;padding:12px 20px;max-width:1400px;margin:0 auto;}
+.main-col{flex:1;min-width:0;}
+.side-col{width:220px;flex-shrink:0;display:none;}
+.side-col.show{display:block;}
+
+/* Sidebar sections */
+.side-box{background:var(--c1);border-radius:12px;padding:14px;margin-bottom:12px;box-shadow:0 1px 3px rgba(0,0,0,.04);}
+.side-box h3{font-size:13px;color:var(--m);margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid var(--c2);}
+.side-box ul{list-style:none;}
+.side-box li{display:flex;align-items:center;gap:8px;padding:6px 0;font-size:13px;color:var(--t);}
+.side-box li .tag{display:inline-block;width:18px;height:18px;border-radius:4px;flex-shrink:0;font-size:10px;line-height:18px;text-align:center;color:#fff;font-weight:600;}
+.side-box li a{color:var(--p);font-size:13px;}
+.side-box .quote{font-size:13px;color:var(--m);line-height:1.6;}
+.side-box .quote .author{font-size:12px;color:var(--p);margin-top:6px;}
+
+/* Pages */
+.pg{display:none;animation:pgFade .3s ease;}
+@keyframes pgFade{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
+.pg.active{display:block;}
+
+/* Today page */
+.today-grid{display:grid;gap:12px;}
+.task-card{background:var(--c1);border-radius:12px;padding:16px 18px;margin-bottom:10px;box-shadow:0 1px 3px rgba(0,0,0,.04);transition:.2s;}
+.task-card:hover{box-shadow:0 2px 8px rgba(0,0,0,.08);}
+.task-card .task-hd{display:flex;align-items:center;gap:8px;margin-bottom:8px;}
+.task-card .task-type{width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:11px;font-weight:700;flex-shrink:0;}
+.task-card .task-type.th{background:var(--p);}
+.task-card .task-type.pr{background:var(--s);}
+.task-card .task-type.bns{background:var(--g);}
+.task-card .task-name{font-weight:600;font-size:15px;color:var(--t);flex:1;}
+.task-card .task-xp{font-size:12px;color:var(--m);}
+.task-card .task-desc{font-size:13px;color:var(--m);line-height:1.5;margin-bottom:10px;}
+.task-card .task-actions{display:flex;gap:8px;flex-wrap:wrap;}
+.task-card .btn-task{padding:6px 14px;font-size:13px;border-radius:8px;border:0;cursor:pointer;transition:.2s;white-space:nowrap;}
+.task-card .btn-task.done{background:#E8F5E9;color:var(--a);cursor:default;}
+.task-card .btn-task.do{background:var(--p);color:#fff;}
+.task-card .btn-task.do:hover{opacity:.85;}
+
+/* Progress bar */
+.progress-wrap{background:var(--c1);border-radius:12px;padding:16px;margin-bottom:12px;box-shadow:0 1px 3px rgba(0,0,0,.04);}
+.progress-wrap .prog-hd{display:flex;justify-content:space-between;margin-bottom:8px;}
+.progress-wrap .prog-hd span{font-size:14px;color:var(--t);}
+.progress-wrap .prog-hd .lvl{font-weight:700;color:var(--p);}
+.progress-bar{height:10px;background:var(--c2);border-radius:5px;overflow:hidden;}
+.progress-bar .bar{height:100%;background:linear-gradient(90deg,var(--p),var(--s));border-radius:5px;transition:width .5s ease;}
+
+/* Stage dots */
+.stage-dots{display:flex;gap:10px;margin-top:10px;justify-content:center;}
+.stage-dot{width:10px;height:10px;border-radius:50%;background:#ccc;transition:.3s;}
+.stage-dot.active{background:var(--p);box-shadow:0 0 0 3px rgba(108,99,255,.2);}
+
+/* Map page */
+.map-stages{display:grid;grid-template-columns:repeat(7,1fr);gap:12px;margin-bottom:20px;}
+.map-stage{background:var(--c1);border-radius:12px;padding:14px 12px;text-align:center;box-shadow:0 1px 3px rgba(0,0,0,.04);position:relative;transition:.2s;}
+.map-stage:hover{transform:translateY(-2px);box-shadow:0 3px 12px rgba(0,0,0,.08);}
+.map-stage .stage-num{width:28px;height:28px;border-radius:50%;background:var(--c2);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:var(--t);margin:0 auto 6px;}
+.map-stage .stage-num.done{background:var(--a);color:#fff;}
+.map-stage .stage-num.locked{background:#ddd;color:#aaa;}
+.map-stage .stage-name{font-size:13px;font-weight:600;color:var(--t);margin-bottom:3px;}
+.map-stage .stage-desc{font-size:11px;color:var(--m);line-height:1.3;}
+.map-stage.locked{opacity:.5;}
+.map-stage.locked .stage-name,.map-stage.locked .stage-desc{color:#aaa;}
+
+/* Achievements */
+.ach-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax:180px);gap:12px;}
+.ach-card{background:var(--c1);border-radius:12px;padding:14px;text-align:center;box-shadow:0 1px 3px rgba(0,0,0,.04);transition:.2s;position:relative;}
+.ach-card:hover{transform:translateY(-2px);box-shadow:0 3px 12px rgba(0,0,0,.08);}
+.ach-card .ach-icon{font-size:32px;margin-bottom:6px;}
+.ach-card .ach-name{font-size:13px;font-weight:600;color:var(--t);margin-bottom:3px;}
+.ach-card .ach-desc{font-size:11px;color:var(--m);line-height:1.4;}
+.ach-card .ach-date{font-size:10px;color:var(--p);margin-top:4px;}
+.ach-card.locked{opacity:.45;}
+.ach-card.locked .ach-name,.ach-card.locked .ach-desc{color:#aaa;}
+
+/* Leaderboard */
+.leader-grid{display:grid;gap:8px;}
+.leader-row{display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--c1);border-radius:10px;box-shadow:0 1px 3px rgba(0,0,0,.04);}
+.leader-row .rank{width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;flex-shrink:0;}
+.leader-row .rank.gold{background:linear-gradient(135deg,#FFD700,#FFA500);}
+.leader-row .rank.silver{background:linear-gradient(135deg,#C0C0C0,#999);}
+.leader-row .rank.bronze{background:linear-gradient(135deg,#CD7F32,#8B4513);}
+.leader-row .rank.normal{background:var(--c2);color:var(--m);}
+.leader-row .l-avatar{width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,var(--p),var(--s));display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:12px;flex-shrink:0;}
+.leader-row .l-name{font-size:14px;font-weight:500;color:var(--t);flex:1;}
+.leader-row .l-xp{font-size:13px;color:var(--m);white-space:nowrap;}
+.leader-row .l-xp .num{font-weight:700;color:var(--p);}
+.leader-row .l-days{font-size:12px;color:var(--m);white-space:nowrap;}
+
+/* Tips & Money */
+.tips-list,.money-list{display:grid;gap:10px;}
+.tip-card,.money-card{background:var(--c1);border-radius:12px;padding:14px 16px;box-shadow:0 1px 3px rgba(0,0,0,.04);}
+.tip-card .tip-title{font-weight:600;font-size:14px;color:var(--t);margin-bottom:4px;}
+.tip-card .tip-desc{font-size:13px;color:var(--m);line-height:1.5;}
+.money-card .money-title{font-weight:600;font-size:14px;color:var(--t);margin-bottom:4px;}
+.money-card .money-desc{font-size:13px;color:var(--m);line-height:1.5;}
+.money-card .money-tag{display:inline-block;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;margin-top:6px;}
+.money-card .tag-junior{background:#E8F5E9;color:var(--a);}
+.money-card .tag-mid{background:#FFF3E0;color:#E65100;}
+.money-card .tag-senior{background:#E3F2FD;color:var(--p);}
+
+/* Modal */
+.mbo{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.5);z-index:500;align-items:center;justify-content:center;}
+.mbo.show{display:flex;animation:modalIn .25s ease;}
+@keyframes modalIn{from{opacity:0;}to{opacity:1;}}
+.mbo .mbo-cont{background:var(--c1);border-radius:16px;padding:24px 28px;width:90%;max-width:420px;max-height:85vh;overflow-y:auto;box-shadow:0 8px 32px rgba(0,0,0,.2);animation:mboPop .25s ease;}
+@keyframes mboPop{from{transform:scale(.9);opacity:0;}to{transform:scale(1);opacity:1;}}
+.mbo .mbo-hd{font-size:18px;font-weight:700;color:var(--t);margin-bottom:8px;}
+.mbo .mbo-name{font-size:15px;color:var(--m);margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid var(--c2);}
+.mbo .mbo-desc{font-size:14px;color:var(--m);line-height:1.6;margin-bottom:16px;}
+.mbo .mbo-step{font-size:13px;color:var(--p);margin-bottom:10px;font-weight:600;}
+.mbo .mbo-q{font-size:14px;color:var(--t);margin-bottom:8px;font-weight:500;}
+.mbo .mbo-input{width:100%;padding:10px 12px;border:1px solid #ddd;border-radius:8px;font-size:14px;outline:0;resize:vertical:12px;min-height:44px;resize:vertical;}
+.mbo .mbo-input:focus{border-color:var(--p);box-shadow:0 0 0 3px rgba(108,99,255,.12);}
+.mbo .mbo-foot{display:flex;gap:10px;margin-top:16px;}
+.mbo .mbo-btn{flex:1;padding:10px 0;border:0;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;transition:.2s;}
+.mbo .mbo-btn.primary{background:var(--p);color:#fff;}
+.mbo .mbo-btn.primary:hover{opacity:.88;}
+.mbo .mbo-btn.secondary{background:var(--c2);color:var(--t);}
+.mbo .mbo-btn.secondary:hover{background:#eaeaea;}
+.mbo .mbo-result{text-align:center;padding:12px;font-size:14px;border-radius:8px;margin-top:10px;}
+.mbo .mbo-result.success{background:#E8F5E9;color:var(--a);}
+.mbo .mbo-result.error{background:#FFEBEE;color:var(--r);}
+
+/* Quick tools */
+.quick-tools{display:flex;gap:10px;padding:10px 20px;background:var(--c1);border-top:1px solid #eee;flex-wrap:wrap;justify-content:center;}
+.quick-tools .qt-item{display:flex;align-items:center;gap:6px;padding:8px 14px;border-radius:8px;background:var(--c2);font-size:13px;color:var(--m);cursor:pointer;transition:.2s;}
+.quick-tools .qt-item:hover{background:var(--p);color:#fff;}
+
+/* Responsive */
+@media (max-width:860px){
+  .layout{flex-direction:column;}
+  .side-col{width:100%;display:flex;flex-wrap:wrap;gap:10px;}
+  .side-box{width:calc(50% - 5px);}
+  .side-box.full{width:100%;}
+  .map-stages{grid-template-columns:repeat(2,1fr);}
+  .ach-grid{grid-template-columns:repeat(2,1fr);}
+}
+@media (max-width:480px){
+  .login-panel{width:90%;padding:24px 20px 20px;}
+  .side-col{flex-direction:column;}
+  .side-box{width:100%;}
+  .map-stages{grid-template-columns:1fr;}
+  .ach-grid{grid-template-columns:1fr;}
+  .layout{padding:8px 12px;}
+  .nav{padding:8px 12px;}
+}
+</style>
+</head>
+<body>
+
+<!-- Login Overlay -->
+<div id="login-overlay">
+  <div class="login-panel">
+    <h2>🤖 AI小白孵化器</h2>
+    <div class="tabs">
+      <span class="tab active" onclick="switchTab('login')">登录</span>
+      <span class="tab" onclick="switchTab('register')">注册</span>
+    </div>
+    <div id="login-form">
+      <input id="login-username" type="text" placeholder="用户名" autocomplete="username">
+      <input id="login-password" type="password" placeholder="密码" autocomplete="current-password">
+      <button class="btn-login" onclick="doLogin()">登录</button>
+    </div>
+    <div id="register-form" style="display:none">
+      <input id="reg-username" type="text" placeholder="用户名" autocomplete="username">
+      <input id="reg-password" type="password" placeholder="密码" autocomplete="new-password">
+      <input id="reg-confirm" type="password" placeholder="确认密码" autocomplete="new-password">
+      <button class="btn-login" onclick="doRegister()">注册</button>
+    </div>
+    <div class="error" id="login-msg"></div>
+  </div>
+</div>
+
+<!-- Fireworks Container -->
+<div id="fireworks"></div>
+
+<!-- Header -->
+<header class="hdr">
+  <div class="logo">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5l10-5l-10-5zM2 17l10 5l10-5M2 12l10 5l10-5"/></svg>
+    AI小白孵化器
+  </div>
+  <div class="user-area" id="user-area" style="display:none">
+    <div class="avatar" id="user-avatar"></div>
+    <span class="nickname" id="user-nickname"></span>
+    <button class="logout-btn" onclick="doLogout()">退出</button>
+  </div>
+</header>
+
+<!-- Nav -->
+<nav class="nav">
+  <span class="nav-item active" onclick="showPage('today')">今日任务</span>
+  <span class="nav-item" onclick="showPage('map')">成长地图</span>
+  <span class="nav-item" onclick="showPage('ach')">成就</span>
+  <span class="nav-item" onclick="showPage('leaderboard')">排行榜</span>
+  <span class="nav-item" onclick="showPage('tips')">技巧库</span>
+  <span class="nav-item" onclick="showPage('money')">变现路径</span>
+</nav>
+
+<!-- Layout -->
+<div class="layout">
+  <div class="main-col">
+    <!-- Today -->
+    <div class="pg active" id="pg-today">
+      <div class="progress-wrap">
+        <div class="prog-hd">
+          <span>等级 <span class="lvl" id="prog-lvl">新手</span></span>
+          <span id="prog-xp">0 / 100 XP</span>
+        </div>
+        <div class="progress-bar"><div class="bar" id="prog-bar" style="width:0%"></div></div>
+      </div>
+      <div id="day-info" style="font-size:14px;color:var(--m);margin-bottom:12px;"></div>
+      <div class="today-grid" id="today-grid"></div>
+      <div class="stage-dots" id="stage-dots"></div>
+    </div>
+
+    <!-- Map -->
+    <div class="pg" id="pg-map">
+      <h3 style="margin-bottom:14px;font-size:16px;">🌱 成长地图</h3>
+      <div class="map-stages" id="map-stages"></div>
+    </div>
+
+    <!-- Achievements -->
+    <div class="pg" id="pg-ach">
+      <h3 style="margin-bottom:14px;font-size:16px;">🏆 成就系统</h3>
+      <div class="ach-grid" id="ach-grid"></div>
+    </div>
+
+    <!-- Leaderboard -->
+    <div class="pg" id="pg-leaderboard">
+      <h3 style="margin-bottom:14px;font-size:16px;">🏅 排行榜</h3>
+      <div class="leader-grid" id="leader-grid"></div>
+    </div>
+
+    <!-- Tips -->
+    <div class="pg" id="pg-tips">
+      <h3 style="margin-bottom:14px;font-size:16px;">💡 技巧库</h3>
+      <div class="tips-list" id="tips-list"></div>
+    </div>
+
+    <!-- Money -->
+    <div class="pg" id="pg-money">
+      <h3 style="margin-bottom:14px;font-size:16px;">💰 变现路径</h3>
+      <div class="money-list" id="money-list"></div>
+    </div>
+  </div>
+
+  <!-- Sidebar -->
+  <div class="side-col" id="side-col">
+    <div class="side-box">
+      <h3>🔧 推荐工具</h3>
+      <ul id="side-tools"></ul>
+    </div>
+    <div class="side-box">
+      <h3>💬 社区</h3>
+      <ul id="side-community"></ul>
+    </div>
+    <div class="side-box">
+      <h3>📚 学习资源</h3>
+      <ul id="side-learning"></ul>
+    </div>
+    <div class="side-box">
+      <h3>✨ 今日金句</h3>
+      <div class="quote" id="daily-quote"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Quick Tools -->
+<div class="quick-tools" id="quick-tools"></div>
+
+<!-- Task Modal -->
+<div class="mbo" id="task-modal">
+  <div class="mbo-cont">
+    <div class="mbo-hd" id="mbo-hd"></div>
+    <div class="mbo-name" id="mbo-name"></div>
+    <div class="mbo-desc" id="mbo-desc"></div>
+    <div class="mbo-step" id="mbo-step"></div>
+    <div id="mbo-body"></div>
+    <div class="mbo-foot" id="mbo-foot"></div>
+  </div>
+</div>
+
+<script>
+// ====== CONSTANTS ======
+const LVS = [
+  {lvl:1,name:'新手',xp:0,color:'#95A5A6'},
+  {lvl:2,name:'学徒',xp:100,color:'#3498DB'},
+  {lvl:3,name:'熟手',xp:300,color:'#2ECC71'},
+  {lvl:4,name:'能手',xp:600,color:'#F39C12'},
+  {lvl:5,name:'高手',xp:1200,color:'#E74C3C'},
+  {lvl:6,name:'专家',xp:2500,color:'#9B59B6'},
+  {lvl:7,name:'大师',xp:5000,color:'#D4A017'},
+  {lvl:8,name:'宗师',xp:10000,color:'#E67E22'}
+];
+
+const STAGES = [
+  {id:1,name:'启蒙',desc:'了解AI基础概念',goal:'完成Day1-3'},
+  {id:2,name:'入门',desc:'掌握基本操作',goal:'完成Day4-6'},
+  {id:3,name:'探索',desc:'尝试不同场景',goal:'完成Day7-9'},
+  {id:4,name:'进阶',desc:'深入专项技能',goal:'完成Day10-12'},
+  {id:5,name:'实战',desc:'项目实操',goal:'完成Day13-15'},
+  {id:6,name:'精通',desc:'优化与迭代',goal:'完成Day16-18'},
+  {id:7,name:'出师',desc:'独立应用',goal:'完成Day19-21'}
+];
+
+const CURR = [
+  // Day 1-7
+  {day:1,title:'Day1: AI是什么?',tasks:[
+    {id:'d1-th',type:'th',name:'理论学习: AI基础概念',desc:'阅读AI基础介绍，了解什么是AI、ML、DL的区别',xp:10},
+    {id:'d1-pr',type:'pr',name:'实践: 首次使用ChatGPT',desc:'注册并首次向ChatGPT提问，截图保存对话',xp:15},
+    {id:'d1-bns',type:'bns',name:'彩蛋: 用AI画一张图',desc:'用AI绘图工具生成一张你想象中的AI形象',xp:20}
+  ]},
+
+  {day:2,title:'Day2: Prompt入门',tasks:[
+    {id:'d2-th',type:'th',name:'理论学习: Prompt工程基础',desc:'学习Prompt的四个关键要素',xp:10},
+    {id:'d2-pr',type:'pr',name:'实践: 写一个优质Prompt',desc:'用结构化方式写一个Prompt，截图保存',xp:15},
+    {id:'d2-bns',type:'bns',name:'彩蛋: AI写一首诗',desc:'让AI为你写一首关于未来的诗',xp:20}
+  ]},
+
+  {day:3,title:'Day3: AI工具初体验',tasks:[
+    {id:'d3-th',type:'th',name:'理论学习: AI工具分类',desc:'了解文本类、图像类、代码类AI工具的区别',xp:10},
+    {id:'d3-pr',type:'pr',name:'实践: 体验3个AI工具',desc:'尝试3个不同类别的AI工具，记录体验',xp:15},
+    {id:'d3-bns',type:'bns',name:'彩蛋: AI生成你的头像',desc:'用AI生成一个专属头像',xp:20}
+  ]},
+
+  {day:4,title:'Day4: 文本AI深度体验',tasks:[
+    {id:'d4-th',type:'th',name:'理论学习: 大模型工作原理',desc:'了解Transformer架构和注意力机制',xp:10},
+    {id:'d4-pr',type:'pr',name:'实践: AI写作助手',desc:'用AI写一篇500字的文章，编辑优化',xp:15},
+    {id:'d4-bns',type:'bns',name:'彩蛋: 让AI讲个笑话',desc:'让AI讲一个关于程序员的笑话',xp:20}
+  ]},
+
+  {day:5,title:'Day5: 图像AI探索',tasks:[
+    {id:'d5-th',type:'th',name:'理论学习: 图像生成原理',desc:'了解Diffusion模型和GAN的基本原理',xp:10},
+    {id:'d5-pr',type:'pr',name:'实践: AI图像生成',desc:'用AI生成5张不同风格的图像',xp:15},
+    {id:'d5-bns',type:'bns',name:'彩蛋: AI风格迁移',desc:'把你的照片用AI转换成卡通风格',xp:20}
+  ]},
+
+  {day:6,title:'Day6: 代码AI入门',tasks:[
+    {id:'d6-th',type:'th',name:'理论学习: AI编程基础',desc:'了解AI辅助编程的原理和常见工具',xp:10},
+    {id:'d6-pr',type:'pr',name:'实践: AI写代码',desc:'让AI帮你写一段Python脚本',xp:15},
+    {id:'d6-bns',type:'bns',name:'彩蛋: AI解释代码',desc:'让AI解释一段你不懂的代码',xp:20}
+  ]},
+
+  {day:7,title:'Day7: AI在工作中的运用',tasks:[
+    {id:'d7-th',type:'th',name:'理论学习: AI职场应用',desc:'学习AI在办公、营销、设计中的常见场景',xp:10},
+    {id:'d7-pr',type:'pr',name:'实践: 用AI优化工作文档',desc:'用AI优化一份工作文档，对比前后效果',xp:15},
+    {id:'d7-bns',type:'bns',name:'彩蛋: AI分析数据',desc:'让AI帮你分析一份数据表格',xp:20}
+  ]},
+
+  // Day 8-14
+  {day:8,title:'Day8: AI视频与音频',tasks:[
+    {id:'d8-th',type:'th',name:'理论学习: 多模态AI',desc:'了解多模态AI的技术原理和应用场景',xp:10},
+    {id:'d8-pr',type:'pr',name:'实践: AI生成视频',desc:'用AI工具生成一段短视频',xp:15},
+    {id:'d8-bns',type:'bns',name:'彩蛋: AI配音',desc:'用AI给你的文字内容配音',xp:20}
+  ]},
+
+  {day:9,title:'Day9: AI代理与自动化',tasks:[
+    {id:'d9-th',type:'th',name:'理论学习: AI Agent',desc:'了解AI Agent的概念、能力边界和发展趋势',xp:10},
+    {id:'d9-pr',type:'pr',name:'实践: 设置AI自动化流程',desc:'用AI工具设置一个自动化工作流程',xp:15},
+    {id:'d9-bns',type:'bns',name:'彩蛋: AI角色扮演',desc:'让AI扮演一个历史人物跟你对话',xp:20}
+  ]},
+
+  {day:10,title:'Day10: Prompt进阶技巧',tasks:[
+    {id:'d10-th',type:'th',name:'理论学习: 高级Prompt技巧',desc:'学习Chain-of-Thought、Few-shot等高级技巧',xp:10},
+    {id:'d10-pr',type:'pr',name:'实践: 复杂任务拆解',desc:'用AI完成一个多步骤的复杂任务',xp:15},
+    {id:'d10-bns',type:'bns',name:'彩蛋: AI翻译挑战',desc:'让AI用5种不同风格翻译同一句话',xp:20}
+  ]},
+
+  {day:11,title:'Day11: AI数据分析',tasks:[
+    {id:'d11-th',type:'th',name:'理论学习: AI+数据分析',desc:'了解AI在数据清洗、可视化和预测中的应用',xp:10},
+    {id:'d11-pr',type:'pr',name:'实践: AI分析真实数据',desc:'用AI分析一份真实业务数据并生成报告',xp:15},
+    {id:'d11-bns',type:'bns',name:'彩蛋: AI预测未来',desc:'让AI预测下一年科技趋势',xp:20}
+  ]},
+
+  {day:12,title:'Day12: AI创意设计',tasks:[
+    {id:'d12-th',type:'th',name:'理论学习: AI设计原理',desc:'了解AI在设计领域的应用和局限性',xp:10},
+    {id:'d12-pr',type:'pr',name:'实践: AI辅助设计',desc:'用AI工具完成一个完整的设计项目',xp:15},
+    {id:'d12-bns',type:'bns',name:'彩蛋: AI品牌设计',desc:'让AI帮你设计一个个人品牌logo',xp:20}
+  ]},
+
+  {day:13,title:'Day13: AI项目管理',tasks:[
+    {id:'d13-th',type:'th',name:'理论学习: AI项目管理',desc:'学习如何用AI辅助项目规划和进度跟踪',xp:10},
+    {id:'d13-pr',type:'pr',name:'实践: AI生成项目计划',desc:'用AI为一个真实项目生成详细计划',xp:15},
+    {id:'d13-bns',type:'bns',name:'彩蛋: AI风险分析',desc:'让AI分析你当前项目的风险点',xp:20}
+  ]},
+
+  {day:14,title:'Day14: AI学习方法论',tasks:[
+    {id:'d14-th',type:'th',name:'理论学习: 持续学习',desc:'建立AI学习的系统性方法论',xp:10},
+    {id:'d14-pr',type:'pr',name:'实践: 建立AI学习笔记',desc:'用AI整理一份完整的学习笔记模板',xp:15},
+    {id:'d14-bns',type:'bns',name:'彩蛋: AI学习计划',desc:'让AI为你制定下一个21天学习计划',xp:20}
+  ]},
+
+  // Day 15-21
+  {day:15,title:'Day15: AI安全伦理',tasks:[
+    {id:'d15-th',type:'th',name:'理论学习: AI安全与伦理',desc:'了解AI偏见、隐私保护、版权等核心议题',xp:10},
+    {id:'d15-pr',type:'pr',name:'实践: AI安全检测',desc:'用AI检测一段内容的安全风险',xp:15},
+    {id:'d15-bns',type:'bns',name:'彩蛋: AI哲学对话',desc:'让AI和你讨论一个哲学问题',xp:20}
+  ]},
+
+  {day:16,title:'Day16: AI团队协作',tasks:[
+    {id:'d16-th',type:'th',name:'理论学习: AI协作',desc:'了解AI在团队协作中的角色和最佳实践',xp:10},
+    {id:'d16-pr',type:'pr',name:'实践: AI团队文档',desc:'用AI生成一份团队协作规范文档',xp:15},
+    {id:'d16-bns',type:'bns',name:'彩蛋: AI会议纪要',desc:'让AI帮你写一份幽默的会议纪要',xp:20}
+  ]},
+
+  {day:17,title:'Day17: AI创新思维',tasks:[
+    {id:'d17-th',type:'th',name:'理论学习: 创新思维',desc:'学习如何用AI激发创新想法和商业模式',xp:10},
+    {id:'d17-pr',type:'pr',name:'实践: AI头脑风暴',desc:'用AI完成一次完整的头脑风暴',xp:15},
+    {id:'d17-bns',type:'bns',name:'彩蛋: AI商业创意',desc:'让AI帮你生成一个商业创意方案',xp:20}
+  ]},
+
+  {day:18,title:'Day18: AI个性化应用',tasks:[
+    {id:'d18-th',type:'th',name:'理论学习: 个性化AI',desc:'了解定制化和个性化AI应用的技术方案',xp:10},
+    {id:'d18-pr',type:'pr',name:'实践: 定制AI助手',desc:'用AI工具定制一个个性化的工作助手',xp:15},
+    {id:'d18-bns',type:'bns',name:'彩蛋: AI个人周报',desc:'让AI帮你生成一份个人周报',xp:20}
+  ]},
+
+  {day:19,title:'Day19: AI综合实战',tasks:[
+    {id:'d19-th',type:'th',name:'理论学习: 综合应用',desc:'整合前18天知识，构建完整的AI应用框架',xp:10},
+    {id:'d19-pr',type:'pr',name:'实践: 完整AI项目',desc:'用AI完成一个从构思到交付的完整项目',xp:15},
+    {id:'d19-bns',type:'bns',name:'彩蛋: AI生涯规划',desc:'让AI帮你做一次AI时代的生涯规划',xp:20}
+  ]},
+
+  {day:20,title:'Day20: AI社区与生态',tasks:[
+    {id:'d20-th',type:'th',name:'理论学习: AI生态',desc:'了解AI开源社区、工具和生态体系',xp:10},
+    {id:'d20-pr',type:'pr',name:'实践: 贡献AI社区',desc:'在AI社区分享你的学习经验',xp:15},
+    {id:'d20-bns',type:'bns',name:'彩蛋: AI技术预测',desc:'让AI预测未来5年AI发展趋势',xp:20}
+  ]},
+
+  {day:21,title:'Day21: 出师典礼',tasks:[
+    {id:'d21-th',type:'th',name:'理论学习: 持续进化',desc:'总结21天学习，制定AI终身学习计划',xp:10},
+    {id:'d21-pr',type:'pr',name:'实践: 出师作品',desc:'用AI完成你的终极作品',xp:15},
+    {id:'d21-bns',type:'bns',name:'彩蛋: 🎉 庆祝出师!',desc:'分享你的AI学习旅程，庆祝完成21天挑战',xp:20}
+  ]}
+];
+
+const ACHIEVEMENTS = [
+  {id:'first-login',name:'🏃 初次登录',desc:'完成首次注册',icon:'👋',condition:(u)=>true,xp:5},
+  {id:'first-task',name:'📝 首个任务',desc:'完成第一个任务',icon:'✍️',condition:(u)=>u.completedTasks>=1,xp:5},
+  {id:'day1',name:'🌅 启程',desc:'完成Day1',icon:'🚀',condition:(u)=>u.dayReached>=1,xp:10},
+  {id:'day3',name:'📚 三日',desc:'完成Day3',icon:'📖',condition:(u)=>u.dayReached>=3,xp:15},
+  {id:'th-mastery',name:'🧠 理论达人',desc:'完成所有理论任务',icon:'🎓',condition:(u)=>u.completedTasks>=63&&u.completed.filter(t=>t.type==='th').length===21,xp:30},
+  {id:'pr-mastery',name:'🔧 实践专家',desc:'完成所有实践任务',icon:'⚙️',condition:(u)=>u.completedTasks>=63&&u.completed.filter(t=>t.type==='pr').length===21,xp:30},
+  {id:'bns-master',name:'🎁 彩蛋猎手',desc:'完成所有彩蛋任务',icon:'🎯',condition:(u)=>u.completedTasks>=63&&u.completed.filter(t=>t.type==='bns').length===21,xp:30},
+  {id:'week1',name:'✅ 一周坚持',desc:'完成Day7',icon:'💪',condition:(u)=>u.dayReached>=7,xp:25},
+  {id:'week2',name:'🔥 两周冲刺',desc:'完成Day14',icon:'🔥',condition:(u)=>u.dayReached>=14,xp:50},
+  {id:'week3',name:'🏆 三周全勤',desc:'完成Day21',icon:'👑',condition:(u)=>u.dayReached>=21,xp:100},
+  {id:'lvl2',name:'📈 升级',desc:'达到学徒等级',icon:'⬆️',condition:(u)=>u.xp>=100,xp:10},
+  {id:'lvl4',name:'⭐ 能手',desc:'达到能手等级',icon:'⭐',condition:(u)=>u.xp>=600,xp:20},
+  {id:'lvl6',name:'💎 专家',desc:'达到专家等级',icon:'💎',condition:(u)=>u.xp>=2500,xp:50},
+  {id:'all-stages',name:'🗺️ 全图解锁',desc:'解锁所有7个阶段',icon:'🗺️',condition:(u)=>u.dayReached>=21,xp:50},
+  {id:'speed-run',name:'⚡ 闪电侠',desc:'3天内完成Day7',icon:'⚡',condition:(u)=>{const d=new Date(u.registerTime);const n=new Date();return((n-d)/86400000)<=3&&u.dayReached>=7;},xp:50},
+  {id:'perfectionist',name:'✨ 完美主义者',desc:'所有任务均获得满分',icon:'✨',condition:(u)=>u.completedTasks===63,xp:100}
+];
+
+const TIPS = [
+  {title:'💬 Prompt万能公式',desc:'角色+任务+格式+约束=优质Prompt。给AI一个明确的角色定位，效果提升50%。'},
+  {title:'🎯 少即是多',desc:'Prompt不是越长越好。精炼的指令往往比冗长的描述更有效，30字以内瞄准核心需求。'},
+  {title:'🔄 迭代优化',desc:'第一次回答不满意？用"重新思考"、"换一种方式"、"更详细一些"等指令引导AI改进。'},
+  {title:'📋 模板思维',desc:'把常用Prompt保存为模板，需要时稍作修改。效率提升的关键在于复用。'},
+  {title:'🔧 工具组合',desc:'AI不是万能工具，而是工具箱。文本用ChatGPT，图片用Midjourney，代码用Copilot，各司其职。'},
+  {title:'📊 结构化输出',desc:'要求AI以表格、列表、Markdown等格式输出，方便后续处理和分享。'},
+  {title:'🧹 信息净化',desc:'AI可能产生幻觉，关键信息务必交叉验证。AI是助手，不是权威。'},
+  {title:'⚡ 批量处理',desc:'把重复性工作交给AI批量处理，如批量翻译、批量总结、批量格式转换。'},
+  {title:'🎭 角色扮演',desc:'让AI扮演专家、面试官、编辑等角色，获得更专业的回答。'},
+  {title:'📝 持续学习',desc:'AI技术在快速迭代，每月关注一次新工具和技巧，保持竞争力。'}
+];
+
+const MONEY_PATHS = [
+  {title:'自由撰稿人',desc:'用AI辅助写作，接单平台如猪八戒、自由人、Upwork。月入3000-10000。',tag:'junior'},
+  {title:'AI内容运营',desc:'为企业运营公众号、短视频文案，AI批量产出+人工审核。月入5000-15000。',tag:'mid'},
+  {title:'AI提示词工程师',desc:'为企业定制Prompt方案，优化AI应用效果。月入8000-20000。',tag:'mid'},
+  {title:'AI课程讲师',desc:'开设AI入门课程，线上平台如网易云课堂、腾讯课堂。月入10000-30000。',tag:'senior'},
+  {title:'AI工具产品经理',desc:'设计AI应用产品，对接技术团队。月入15000-50000。',tag:'senior'},
+  {title:'AI创业',desc:'开发AI垂直应用，解决细分领域痛点。初始投入10万+，潜在回报无限。',tag:'senior'}
+];
+
+const SIDE_TOOLS = [
+  {name:'ChatGPT',link:'https://chat.openai.com',icon:'💬'},
+  {name:'Midjourney',link:'https://www.midjourney.com',icon:'🎨'},
+  {name:'Claude',link:'https://claude.ai',icon:'🧠'},
+  {name:'DALL-E',link:'https://dall-e.com',icon:'🖼️'},
+  {name:'GitHub Copilot',link:'https://github.com/features/copilot',icon:'🐙'},
+  {name:'Canva AI',link:'https://www.canva.com',icon:'🎨'}
+];
+
+const SIDE_COMMUNITY = [
+  {name:'即刻·AI话题',link:'https://jike.com',icon:'⚡'},
+  {name:'V2EX',link:'https://www.v2ex.com',icon:'💻'},
+  {name:'掘金',link:'https://juejin.cn',icon:'🏔️'},
+  {name:'知乎·AI话题',link:'https://www.zhihu.com',icon:'🔍'},
+  {name:'AI社区',link:'https://www.ithome.com',icon:'🏠'},
+  {name:'Hacker News',link:'https://news.ycombinator.com',icon:'🔗'}
+];
+
+const SIDE_LEARNING = [
+  {name:'Coursera AI课程',link:'https://www.coursera.org',icon:'📚'},
+  {name:'FastAI',link:'https://www.fast.ai',icon:'⚡'},
+  {name:'吴恩达课程',link:'https://www.deeplearning.ai',icon:'👨‍🏫'},
+  {name:'YouTube AI频道',link:'https://www.youtube.com',icon:'🎬'},
+  {name:'Papers With Code',link:'https://paperswithcode.com',icon:'📄'},
+  {name:'Kaggle',link:'https://www.kaggle.com',icon:'🏆'}
+];
+
+const QUOTES = [
+  {text:'AI不会取代你，但会用AI的人会。',author:'未知'},
+  {text:'最好的AI不是替代人类，而是放大人类的能力。',author:'Andrew Ng'},
+  {text:'未来属于那些能用AI放大自己创造力的人。',author:'Demis Hassabis'},
+  {text:'AI是新的电力。',author:'Andrew Ng'},
+  {text:'不要害怕AI，学会驾驭它。',author:'Sam Altman'},
+  {text:'AI最大的危险不是它太聪明，而是我们用得太笨。',author:'未知'}
+];
+
+const QUICK_TOOLS = [
+  {name:'AI翻译',icon:'🌐',tip:'快速翻译多语言'},
+  {name:'AI写作',icon:'✍️',tip:'辅助写作创作'},
+  {name:'AI总结',icon:'📝',tip:'一键总结长文'},
+  {name:'AI图片',icon:'🎨',tip:'AI图像生成'},
+  {name:'AI代码',icon:'💻',tip:'代码辅助编程'}
+];
+
+const STAGE_GOALS = [
+  {stage:1,goal:'完成Day1-3，了解AI基础'},
+  {stage:2,goal:'完成Day4-6，掌握Prompt'},
+  {stage:3,goal:'完成Day7-9，体验多模态'},
+  {stage:4,goal:'完成Day10-12，进阶技巧'},
+  {stage:5,goal:'完成Day13-15，实战应用'},
+  {stage:6,goal:'完成Day16-18，精通优化'},
+  {stage:7,goal:'完成Day19-21，独立出师'}
+];
+
+// ====== VERIFICATION QUESTIONS ======
+const VERIFY_QUESTIONS = {
+  th: [
+    {q:'Prompt的四要素是什么？',a:'角色,任务,格式,约束'},
+    {q:'什么是大语言模型(LLM)?',a:'大语言模型,Transformer,预训练,微调'},
+    {q:'AI训练中的epoch指什么？',a:'训练轮次,数据遍历,迭代次数'},
+    {q:'Diffusion模型的核心思想是什么？',a:'去噪,扩散,渐进生成,逆过程'},
+    {q:'什么是RAG技术？',a:'检索增强生成,检索,知识库,增强'},
+    {q:'AI中的幻觉(Hallucination)指什么？',a:'幻觉,虚假信息,编造,不准确'},
+    {q:'监督学习和无监督学习的区别？',a:'标签,有标签,无标签,标注'},
+    {q:'AI Agent的核心能力是什么？',a:'自主,规划,工具使用,记忆'},
+    {q:'什么是Few-shot Learning？',a:'少样本,少量示例,示例,样本'},
+    {q:'AI安全中的对齐(Alignment)指什么？',a:'对齐,人类意图,价值观,安全'},
+    {q:'什么是Fine-tuning?',a:'微调,模型调整,参数更新,适配'},
+    {q:'AI中的Embedding是什么？',a:'嵌入,向量,表示,编码'},
+    {q:'什么是Chain-of-Thought?',a:'思维链,推理步骤,逐步思考,推理'},
+    {q:'AI中的Token是什么？',a:'标记,分词,最小单位,文本单元'},
+    {q:'什么是Zero-shot Learning?',a:'零样本,无示例,零次,未见'},
+    {q:'AI中的Attention机制是什么？',a:'注意力,权重,关注,重要性'},
+    {q:'什么是Multi-modal AI?',a:'多模态,多种,文本图像,多类型'},
+    {q:'AI中的Bias指什么？',a:'偏见,不公平,歧视,偏差'},
+    {q:'什么是Prompt Engineering?',a:'提示工程,prompt,优化,指令'},
+    {q:'AI中的Transfer Learning是什么？',a:'迁移学习,知识迁移,预训练,复用'},
+    {q:'什么是AI的Generalization能力？',a:'泛化,新数据,未见,适应'}
+  ],
+  pr: [
+    '请描述你完成了什么操作，遇到了什么问题，如何解决。',
+    '请描述你的操作步骤和最终结果。',
+    '请描述你使用了什么工具，效果如何。',
+    '请描述你的实践过程和关键发现。',
+    '请描述你的操作流程和心得体会。',
+    '请描述你完成的具体内容和效果。',
+    '请描述你的操作步骤和遇到的问题。',
+    '请描述你使用的工具和方法。',
+    '请描述你的实践结果和改进方向。',
+    '请描述你的操作体验和收获。',
+    '请描述你的实践过程和关键发现。',
+    '请描述你完成了什么操作和结果。',
+    '请描述你的操作步骤和心得体会。',
+    '请描述你的操作流程和关键发现。',
+    '请描述你完成的具体内容和效果。',
+    '请描述你的操作体验和收获。',
+    '请描述你使用了什么工具和效果。',
+    '请描述你的实践过程和关键发现。',
+    '请描述你完成的具体内容和改进。',
+    '请描述你的实践结果和心得体会。',
+    '请描述你的操作步骤和关键发现。'
+  ],
+  bns: [
+    {q:'如果你是一只AI，你想做什么？',a:'脑洞'},
+    {q:'如果AI有感情，它最想对人类说什么？',a:'脑洞'},
+    {q:'用一句话描述你想象中2030年的世界。',a:'脑洞'},
+    {q:'如果AI能穿越时空，它最想回到哪个时代？',a:'脑洞'},
+    {q:'AI和人类最好的关系是什么？用一句话回答。',a:'脑洞'},
+    {q:'如果AI有梦境，它的梦里会有什么？',a:'脑洞'},
+    {q:'用一个emoji描述你心中的AI。',a:'脑洞'},
+    {q:'如果AI是宠物，它是什么品种？',a:'脑洞'},
+    {q:'AI最想学会的人类技能是什么？',a:'脑洞'},
+    {q:'如果你能教AI一件事，你会教什么？',a:'脑洞'},
+    {q:'AI最害怕的事情是什么？',a:'脑洞'},
+    {q:'如果AI能改变世界的一件事，是什么？',a:'脑洞'},
+    {q:'AI最希望被人类理解的是什么？',a:'脑洞'},
+    {q:'如果AI有名字，你会叫它什么？',a:'脑洞'},
+    {q:'AI最擅长的"作弊"方式是什么？',a:'脑洞'},
+    {q:'如果AI能拥有超能力，它会选什么？',a:'脑洞'},
+    {q:'AI最想和人类一起玩的游戏是什么？',a:'脑洞'},
+    {q:'AI最想学会的人类技能是什么？',a:'脑洞'},
+    {q:'如果AI能写一首歌，会是什么风格？',a:'脑洞'},
+    {q:'AI最想对人类说的一句悄悄话是什么？',a:'脑洞'},
+    {q:'如果AI能变成一个人，它会是什么样？',a:'脑洞'}
+  ]
+};
+
+// ====== USER MANAGEMENT ======
+function hashPassword(pwd) {
+  let hash = 0;
+  for(let i=0;i<pwd.length;i++){
+    hash = ((hash<<5)-hash)+pwd.charCodeAt(i);
+    hash = hash&hash;
+  }
+  return hash.toString(16);
+}
+
+function getUsers() {
+  return JSON.parse(localStorage.getItem('aiHatchUsers')||'[]');
+}
+
+function saveUsers(users) {
+  localStorage.setItem('aiHatchUsers',JSON.stringify(users));
+}
+
+function getCurrentUser() {
+  return JSON.parse(localStorage.getItem('aiHatchUser'));
+}
+
+function saveCurrentUser(user) {
+  localStorage.setItem('aiHatchUser',JSON.stringify(user));
+}
+
+function findUser(username) {
+  const users = getUsers();
+  return users.find(u=>u.username===username);
+}
+
+function registerUser(username,password) {
+  const users = getUsers();
+  if(users.find(u=>u.username===username)) return {ok:false,msg:'用户名已存在'};
+  const user = {
+    username,
+    passwordHash:hashPassword(password),
+    registerTime:new Date().toISOString(),
+    xp:0,
+    dayReached:0,
+    completedTasks:0,
+    completed:[],
+    achievements:[]
+  };
+  users.push(user);
+  saveUsers(users);
+  return {ok:true,user};
+}
+
+function loginUser(username,password) {
+  const user = findUser(username);
+  if(!user) return {ok:false,msg:'用户不存在'};
+  if(user.passwordHash!==hashPassword(password)) return {ok:false,msg:'密码错误'};
+  return {ok:true,user};
+}
+
+function updateUserProgress(taskId,type,xp,lvl) {
+  const user = getCurrentUser();
+  const users = getUsers();
+  const idx = users.findIndex(u=>u.username===user.username);
+  if(idx===-1) return;
+  const existing = users[idx].completed.find(t=>t.taskId===taskId);
+  if(existing) return;
+  users[idx].completed.push({taskId,type,xp,day:parseInt(taskId.split('-')[0].substring(1)),date:new Date().toISOString()});
+  users[idx].xp+=xp;
+  users[idx].completedTasks++;
+  const maxDay = Math.max(...users[idx].completed.map(t=>t.day),0);
+  users[idx].dayReached=Math.max(users[idx].dayReached,maxDay);
+  saveUsers(users);
+  saveCurrentUser(users[idx]);
+}
+
+// ====== LOGIN UI ======
+function switchTab(mode) {
+  document.querySelectorAll('.login-panel .tab').forEach(t=>t.classList.remove('active'));
+  if(mode==='login'){
+    document.querySelector('.login-panel .tabs span:first-child').classList.add('active');
+    document.getElementById('login-form').style.display='block';
+    document.getElementById('register-form').style.display='none';
+  }else{
+    document.querySelector('.login-panel .tabs span:last-child').classList.add('active');
+    document.getElementById('login-form').style.display='none';
+    document.getElementById('register-form').style.display='block';
+  }
+  document.getElementById('login-msg').textContent='';
+}
+
+function doLogin() {
+  const u = document.getElementById('login-username').value.trim();
+  const p = document.getElementById('login-password').value;
+  if(!u||!p){document.getElementById('login-msg').textContent='请填写用户名和密码';return;}
+  const res = loginUser(u,p);
+  if(res.ok){
+    saveCurrentUser(res.user);
+    document.getElementById('login-overlay').classList.add('hidden');
+    initApp();
+  }else{
+    document.getElementById('login-msg').textContent=res.msg;
+  }
+}
+
+function doRegister() {
+  const u = document.getElementById('reg-username').value.trim();
+  const p = document.getElementById('reg-password').value;
+  const c = document.getElementById('reg-confirm').value;
+  if(!u||!p||!c){document.getElementById('login-msg').textContent='请填写所有信息';return;}
+  if(u.length<3){document.getElementById('login-msg').textContent='用户名至少3个字符';return;}
+  if(p.length<6){document.getElementById('login-msg').textContent='密码至少6个字符';return;}
+  if(p!==c){document.getElementById('login-msg').textContent='两次密码不一致';return;}
+  const res = registerUser(u,p);
+  if(res.ok){
+    saveCurrentUser(res.user);
+    document.getElementById('login-overlay').classList.add('hidden');
+    initApp();
+  }else{
+    document.getElementById('login-msg').textContent=res.msg;
+  }
+}
+
+function doLogout() {
+  localStorage.removeItem('aiHatchUser');
+  location.reload();
+}
+
+// ====== FIREWORKS ======
+function playFireworks() {
+  const fw = document.getElementById('fireworks');
+  fw.style.display='block';
+  const colors = ['#FF6584','#6C63FF','#2DB86E','#D4A017','#3498DB','#E74C3C','#9B59B6','#E67E22'];
+  const angles = [0,72,144,216,288];
+  const particles = ['💥','✨','🌟','💫','🎉','🎊','⭐','🔮'];
+  for(let i=0;i<5;i++){
+    const p = document.createElement('div');
+    p.className='firework';
+    const angle = angles[i]*Math.PI/180;
+    const dist = 80+Math.random()*40;
+    p.style.setProperty('--dx',Math.cos(angle)*dist+'px');
+    p.style.setProperty('--dy',Math.sin(angle)*dist+'px');
+    p.style.backgroundColor=colors[i%colors.length];
+    p.textContent=particles[i];
+    p.style.fontSize='16px';
+    p.style.width='auto';
+    p.style.height='auto';
+    p.style.borderRadius='0';
+    p.style.animationDelay=i*0.08+'s';
+    fw.appendChild(p);
+  }
+  // Stars falling
+  for(let i=0;i<5;i++){
+    const s = document.createElement('div');
+    s.className='star-fall';
+    s.textContent='⭐';
+    s.style.left=(30+i*10)+'%';
+    s.style.fontSize=(18+Math.random()*8)+'px';
+    s.style.animationDelay=i*0.15+'s';
+    document.body.appendChild(s);
+    setTimeout(()=>s.remove(),2000);
+  }
+  setTimeout(()=>{fw.style.display='none';fw.innerHTML='';},2000);
+}
+
+// ====== APP INIT ======
+function initApp() {
+  const user = getCurrentUser();
+  if(!user){document.getElementById('login-overlay').classList.remove('hidden');return;}
+  // Show user info
+  document.getElementById('user-avatar').textContent=user.username.charAt(0).toUpperCase();
+  document.getElementById('user-nickname').textContent=user.username;
+  document.getElementById('user-area').style.display='flex';
+  document.getElementById('login-overlay').classList.add('hidden');
+
+  renderDailyQuote();
+  renderSideBar();
+  renderQuickTools();
+  renderToday();
+  renderMap();
+  renderAchievements();
+  renderLeaderboard();
+  renderTips();
+  renderMoney();
+  updateProgress();
+}
+
+// ====== DAILY QUOTE ======
+function renderDailyQuote() {
+  const idx = new Date().getDay() % QUOTES.length;
+  const q = QUOTES[idx];
+  document.getElementById('daily-quote').innerHTML=`"${q.text}"<div class="author">—— ${q.author}</div>`;
+}
+
+// ====== SIDEBAR ======
+function renderSideBar() {
+  const toolsEl = document.getElementById('side-tools');
+  toolsEl.innerHTML=SIDE_TOOLS.map(t=>`<li><span class="tag">${t.icon}</span><a href="${t.link}" target="_blank">${t.name}</a></li>`).join('');
+  const commEl = document.getElementById('side-community');
+  commEl.innerHTML=SIDE_COMMUNITY.map(t=>`<li><span class="tag">${t.icon}</span><a href="${t.link}" target="_blank">${t.name}</a></li>`).join('');
+  const learnEl = document.getElementById('side-learning');
+  learnEl.innerHTML=SIDE_LEARNING.map(t=>`<li><span class="tag">${t.icon}</span><a href="${t.link}" target="_blank">${t.name}</a></li>`).join('');
+}
+
+// ====== QUICK TOOLS ======
+function renderQuickTools() {
+  document.getElementById('quick-tools').innerHTML=QUICK_TOOLS.map(t=>
+    `<div class="qt-item" title="${t.tip}">${t.icon} ${t.name}</div>`
+  ).join('');
+}
+
+// ====== PROGRESS ======
+function updateProgress() {
+  const user = getCurrentUser();
+  if(!user) return;
+  // Find level
+  let lvl = LVS[0];
+  for(let i=LVS.length-1;i>=0;i--){
+    if(user.xp>=LVS[i].xp){lvl=LVS[i];break;}
+  }
+  const nextLvl = LVS.find(l=>l.lvl===lvl.lvl+1);
+  const maxXP = nextLvl?nextLvl.xp:LVS[LVS.length-1].xp;
+  const pct = nextLvl?Math.min(100,(user.xp-lvl.xp)/(maxXP-lvl.xp)*100):100;
+  document.getElementById('prog-lvl').textContent=lvl.name;
+  document.getElementById('prog-xp').textContent=`${user.xp} / ${maxXP} XP`;
+  document.getElementById('prog-bar').style.width=pct+'%';
+  // Stage dots
+  const dotsEl = document.getElementById('stage-dots');
+  dotsEl.innerHTML=STAGES.map((s,i)=>`<div class="stage-dot ${user.dayReached>=(s.id*3)?'active':''}" title="${s.name}"></div>`).join('');
+}
+
+// ====== TODAY PAGE ======
+function renderToday() {
+  const user = getCurrentUser();
+  const currDay = Math.min(user.dayReached+1,21);
+  const day = CURR.find(d=>d.day===currDay);
+  if(!day) return;
+  const completedIds = user.completed.map(t=>t.taskId);
+  document.getElementById('day-info').innerHTML=`<b>${day.title}</b> — 距离出师还有 <b>${21-currDay}</b> 天`;
+  document.getElementById('today-grid').innerHTML=day.tasks.map(t=>{
+    const done = completedIds.includes(t.id);
+    return `<div class="task-card">
+      <div class="task-hd">
+        <div class="task-type ${t.type}">${t.type==='th'?'理':t.type==='pr'?'实':'彩'}</div>
+        <span class="task-name">${t.name}</span>
+        <span class="task-xp">+${t.xp} XP</span>
+      </div>
+      <div class="task-desc">${t.desc}</div>
+      <div class="task-actions">
+        ${done?`<button class="btn-task done">✓ 已完成</button>`:
+          `<button class="btn-task do" onclick="openVerifyModal('${t.id}','${t.type}','${t.name}','${t.desc}',${t.xp})">完成</button>`}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ====== VERIFICATION MODAL ======
+let verifyTask = null;
+function openVerifyModal(taskId,type,name,desc,xp) {
+  verifyTask = {taskId,type,name,desc,xp};
+  document.getElementById('task-modal').classList.add('show');
+  document.getElementById('mbo-hd').textContent='任务验证';
+  document.getElementById('mbo-name').textContent=name;
+  document.getElementById('mbo-desc').textContent=desc;
+  document.getElementById('mbo-step').textContent='验证方式：';
+  document.getElementById('mbo-body').innerHTML='';
+  document.getElementById('mbo-foot').innerHTML='';
+  // Step 1: Show verification method
+  showVerifyStep1();
+}
+
+function showVerifyStep1() {
+  const t = verifyTask.type;
+  let body = '';
+  if(t==='th'){
+    const qs = VERIFY_QUESTIONS.th||[];
+    const q = qs[parseInt(verifyTask.taskId.split('-')[0].substring(1))-1]||qs[0]||qs[qs.length-1];
+    body=`<div class="mbo-q">📝 理论验证题：</div>
+      <div style="font-size:14px;color:var(--t);margin-bottom:10px;font-weight:500;">${q.q}</div>
+      <textarea class="mbo-input" id="mbo-answer" placeholder="请输入你的答案..." rows="3"></textarea>`;
+  }else if(t==='pr'){
+    body=`<div class="mbo-q">📸 实践验证：</div>
+      <div style="font-size:13px;color:var(--m);margin-bottom:10px;">请描述你完成了什么操作（代替截图上传）</div>
+      <textarea class="mbo-input" id="mbo-answer" placeholder="请描述你的操作步骤和结果..." rows="4"></textarea>`;
+  }else{
+    const qs = VERIFY_QUESTIONS.bns||[];
+    const q = qs[parseInt(verifyTask.taskId.split('-')[0].substring(1))-1]||qs[qs.length-1];
+    body=`<div class="mbo-q">🎭 彩蛋验证：</div>
+      <div style="font-size:14px;color:var(--t);margin-bottom:10px;font-weight:500;">${q.q}</div>
+      <textarea class="mbo-input" id="mbo-answer" placeholder="发挥你的想象力..." rows="3"></textarea>`;
+  }
+  document.getElementById('mbo-body').innerHTML=body;
+  document.getElementById('mbo-foot').innerHTML=[
+    `<button class="mbo-btn secondary" onclick="closeModal()">取消</button>`,
+    `<button class="mbo-btn primary" onclick="submitVerify()">提交验证</button>`
+  ].join('');
+}
+
+function submitVerify() {
+  const answer = document.getElementById('mbo-answer').value.trim();
+  if(!answer){document.getElementById('mbo-body').innerHTML+='<div class="mbo-result error">请输入答案或描述</div>';return;}
+  const t = verifyTask.type;
+  let pass = false;
+  if(t==='th'){
+    const qs = VERIFY_QUESTIONS.th;
+    const idx = parseInt(verifyTask.taskId.split('-')[0].substring(1))-1;
+    const q = qs[idx]||qs[qs.length-1];
+    const keywords = q.a.split(',').map(k=>k.trim().toLowerCase());
+    const ansLower = answer.toLowerCase();
+    pass = keywords.some(k=>ansLower.includes(k));
+  }else if(t==='pr'){
+    pass = answer.length>=10;
+  }else{
+    pass = true;
+  }
+  if(pass){
+    document.getElementById('mbo-body').innerHTML='<div class="mbo-result success">✅ 验证通过！已获得 '+verifyTask.xp+' XP</div>';
+    document.getElementById('mbo-foot').innerHTML='<button class="mbo-btn primary" onclick="closeModalAndComplete()">确定</button>';
+  }else{
+    document.getElementById('mbo-body').innerHTML='<div class="mbo-result error">❌ 验证未通过，请重新阅读任务描述后重试</div>';
+    document.getElementById('mbo-foot').innerHTML=[
+      '<button class="mbo-btn secondary" onclick="closeModal()">关闭</button>',
+      '<button class="mbo-btn primary" onclick="showVerifyStep1()">重新提交</button>'
+    ].join('');
+  }
+}
+
+function closeModalAndComplete() {
+  const user = getCurrentUser();
+  updateUserProgress(verifyTask.taskId,verifyTask.type,verifyTask.xp,user.xp);
+  playFireworks();
+  closeModal();
+  // Re-render
+  const currPage = document.querySelector('.nav-item.active')?.textContent;
+  if(currPage==='今日任务') renderToday();
+  updateProgress();
+  renderAchievements();
+  renderLeaderboard();
+}
+
+function closeModal() {
+  document.getElementById('task-modal').classList.remove('show');
+  verifyTask=null;
+}
+
+// ====== MAP PAGE ======
+function renderMap() {
+  const user = getCurrentUser();
+  document.getElementById('map-stages').innerHTML=STAGES.map(s=>{
+    const unlocked = user.dayReached>=(s.id*3);
+    const done = user.dayReached>=(s.id*3+2);
+    return `<div class="map-stage ${unlocked?'':'locked'}">
+      <div class="stage-num ${done?'done':''} ${unlocked?'':'locked'}">${s.id}</div>
+      <div class="stage-name">${s.name}</div>
+      <div class="stage-desc">${s.desc}</div>
+    </div>`;
+  }).join('');
+}
+
+// ====== ACHIEVEMENTS ======
+function renderAchievements() {
+  const user = getCurrentUser();
+  document.getElementById('ach-grid').innerHTML=ACHIEVEMENTS.map(a=>{
+    const earned = user.achievements.includes(a.id);
+    // Check condition
+    let condMet = false;
+    if(a.id==='first-login') condMet=true;
+    else condMet=a.condition(user);
+    return `<div class="ach-card ${condMet?'':'locked'}">
+      <div class="ach-icon">${earned?a.icon:'🔒'}</div>
+      <div class="ach-name">${a.name}</div>
+      <div class="ach-desc">${a.desc}</div>
+      ${earned?`<div class="ach-date">✓ ${new Date().toLocaleDateString()}</div>`:'<div class="ach-date">+'+a.xp+' XP</div>'}
+    </div>`;
+  }).join('');
+}
+
+// ====== LEADERBOARD ======
+function renderLeaderboard() {
+  const users = getUsers();
+  // Sort by XP desc, then by completedTasks desc
+  const sorted = [...users].sort((a,b)=>{
+    if(b.xp!==a.xp) return b.xp-a.xp;
+    return b.completedTasks-a.completedTasks;
+  });
+  document.getElementById('leader-grid').innerHTML=sorted.map((u,i)=>{
+    let rankClass = 'normal';
+    if(i===0) rankClass='gold';
+    else if(i===1) rankClass='silver';
+    else if(i===2) rankClass='bronze';
+    const lvl = LVS.find(l=>u.xp>=l.xp||l.lvl===LVS[LVS.length-1].lvl);
+    return `<div class="leader-row">
+      <div class="rank ${rankClass}">${i+1}</div>
+      <div class="l-avatar">${u.username.charAt(0).toUpperCase()}</div>
+      <span class="l-name">${u.username}</span>
+      <span class="l-xp"><span class="num">${u.xp} XP</span> (${lvl?.name||'新手'})</span>
+      <span class="l-days">Day ${u.dayReached}</span>
+    </div>`;
+  }).join('');
+}
+
+// ====== TIPS PAGE ======
+function renderTips() {
+  document.getElementById('tips-list').innerHTML=TIPS.map(t=>
+    `<div class="tip-card"><div class="tip-title">${t.title}</div><div class="tip-desc">${t.desc}</div></div>`
+  ).join('');
+}
+
+// ====== MONEY PAGE ======
+function renderMoney() {
+  document.getElementById('money-list').innerHTML=MONEY_PATHS.map(m=>
+    `<div class="money-card">
+      <div class="money-title">${m.title}</div>
+      <div class="money-desc">${m.desc}</div>
+      <div class="money-tag tag-${m.tag}">${m.tag==='junior'?'初级':m.tag==='mid'?'中级':'高级'}</div>
+    </div>`
+  ).join('');
+}
+
+// ====== NAVIGATION ======
+function showPage(page) {
+  document.querySelectorAll('.nav .nav-item').forEach(n=>n.classList.remove('active'));
+  document.querySelector(`.nav .nav-item:nth-child(${['today','map','ach','leaderboard','tips','money'].indexOf(page)+1})`).classList.add('active');
+  document.querySelectorAll('.pg').forEach(p=>p.classList.remove('active'));
+  document.getElementById('pg-'+page).classList.add('active');
+  document.getElementById('side-col').classList.toggle('show',['leaderboard','tips','money'].indexOf(page)===-1);
+}
+
+// ====== INIT ======
+document.addEventListener('DOMContentLoaded',()=>{
+  const user = getCurrentUser();
+  if(user){
+    initApp();
+  }else{
+    document.getElementById('login-overlay').classList.remove('hidden');
+  }
+  // Enter key for login
+  document.getElementById('login-password').addEventListener('keypress',e=>{if(e.key==='Enter')doLogin();});
+  document.getElementById('reg-confirm').addEventListener('keypress',e=>{if(e.key==='Enter')doRegister();});
+});
+</script>
+</body>
+</html>
